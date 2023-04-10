@@ -1,0 +1,18 @@
+# dotnet compiled output
+**/bin
+**/obj
+
+# angular compiled output
+**/node_modules
+**/dist
+
+# terraform
+**/.terraform
+
+# editors
+*.idea
+*.vs
+*.DS_Store
+*.user
+*.sum
+*.hcl
