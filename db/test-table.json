@@ -1,5 +1,5 @@
 {
-  "TableName": "testTable",
+  "TableName": "TomsTestTable",
   "KeySchema": [
     {
       "AttributeName": "id",
