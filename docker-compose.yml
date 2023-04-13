@@ -3,14 +3,12 @@ services:
   dynamodb:
     image: amazon/dynamodb-local
     container_name: local-dynamodb
-    hostname: localhost
     restart: always
     volumes:
       - ./db:/home/dynamodblocal/data
     ports:
       - "8000:8000"
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/"
-    networks:
-      local-api-network:
 networks:
-  local-api-network:
+  local-dynamodb:
+    name: local-dynamodb

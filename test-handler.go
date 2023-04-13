@@ -1,49 +1,45 @@
 package main
 
 import (
+	"backend/aws"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"log"
 )
-
-type MyResponse struct {
-	Message string `json:"body"`
-}
-
-func HandleLambdaEvent() (MyResponse, error) {
-	return MyResponse{Message: fmt.Sprintf("Hello World")}, nil
-}
 
 var dbClient *dynamodb.Client
 
-// init is called when lambda is booted up
-func init() {
-	dbClient = CreateLocalClient()
+type LambdaResponse struct {
+	Body string `json:"body"`
 }
 
-func CreateLocalClient() *dynamodb.Client {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion("us-east-1"),
-		config.WithEndpointResolver(aws.EndpointResolverFunc(
-			func(service, region string) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: "http://localhost:8000"}, nil
-			})),
-		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
-			Value: aws.Credentials{
-				AccessKeyID: "dummy", SecretAccessKey: "dummy", SessionToken: "dummy",
-				Source: "Hard-coded credentials; values are irrelevant for local DynamoDB",
-			},
-		}),
-	)
+func ListTables() ([]string, error) {
+	var tableNames []string
+	tables, err := dbClient.ListTables(
+		context.TODO(), &dynamodb.ListTablesInput{})
 	if err != nil {
-		panic(err)
+		log.Printf("Couldn't list tables. Here's why: %v\n", err)
+	} else {
+		tableNames = tables.TableNames
+		for index, str := range tableNames {
+			fmt.Println(index, str)
+		}
 	}
+	return tableNames, err
+}
+func HandleLambdaEvent() (LambdaResponse, error) {
+	fmt.Println("HandleLambdaEvent")
 
-	return dynamodb.NewFromConfig(cfg)
+	_, tables := ListTables()
+	fmt.Println(tables)
+	return LambdaResponse{Body: fmt.Sprintf("%s", tables)}, nil
+}
+
+// init is called when lambda is booted up
+func init() {
+	dbClient = dynamodb.NewFromConfig(aws.GetConfig())
 }
 
 func main() {

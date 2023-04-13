@@ -4,7 +4,7 @@ Resources:
   LambdaGet:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: test-handler
+      Handler: dist/test-handler
       Runtime: go1.x
       Timeout: 15
       Events:
