@@ -1,7 +1,6 @@
-package local_server
+package ws
 
 import (
-	"backend/pkg/handlers"
 	"bufio"
 	"context"
 	"fmt"
@@ -31,7 +30,7 @@ func acceptConnection(connection net.Conn) {
 	connectionId := uuid.New().String()
 	connections[connectionId] = connection
 
-	_, err := handlers.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+	_, err := ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
 	})
 	if err != nil {
@@ -42,7 +41,7 @@ func acceptConnection(connection net.Conn) {
 	scanner := bufio.NewScanner(connection)
 	for scanner.Scan() {
 		message := scanner.Text()
-		_, err = handlers.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+		_, err = DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
 			Body:           message,
 		})

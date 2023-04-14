@@ -1,4 +1,4 @@
-package handlers
+package ws
 
 // References
 // https://github.com/aws-samples/apigateway-websockets-golang
@@ -8,7 +8,6 @@ import (
 	awshelpers "backend/pkg/aws-helpers"
 	apigateway "backend/pkg/aws-helpers/api-gateway"
 	"backend/pkg/aws-helpers/db"
-	"backend/pkg/service"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
@@ -54,7 +53,7 @@ func DefaultHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 	fmt.Println("requestId", req.RequestContext.RequestID)
 	fmt.Println("connectionId", req.RequestContext.ConnectionID)
 
-	service.Route(&req.RequestContext, req.Body)
+	Route(&req.RequestContext, req.Body)
 
 	return apigateway.OkResponse(), nil
 }

@@ -1,9 +1,8 @@
-package service
+package ws
 
 import (
 	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/aws-helpers/db"
-	"backend/pkg/ws"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
@@ -11,7 +10,7 @@ import (
 	"log"
 )
 
-func HandleChat(requestContext *events.APIGatewayWebsocketProxyRequestContext, message ws.Message) {
+func HandleChat(requestContext *events.APIGatewayWebsocketProxyRequestContext, message Message) {
 	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
 	connectionTable := db.ConnectionTable{DynamoDbClient: dbClient}
 	connections := connectionTable.GetAll()
@@ -20,7 +19,7 @@ func HandleChat(requestContext *events.APIGatewayWebsocketProxyRequestContext, m
 		if con.ConnectionId == requestContext.ConnectionID {
 			continue
 		}
-		err := ws.Send(context.TODO(), con.ConnectionId, message.Data)
+		err := Send(context.TODO(), con.ConnectionId, message.Data)
 		if err != nil {
 			log.Fatalf("Error sending: %s", err)
 		}

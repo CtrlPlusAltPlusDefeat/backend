@@ -2,7 +2,6 @@ package ws
 
 import (
 	"backend/pkg/aws-helpers"
-	localserver "backend/pkg/local-server"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -24,7 +23,7 @@ func Send(ctx context.Context, id string, data []byte) error {
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
 	if local == "1" {
 		fmt.Println("Using Local Websocket server")
-		localserver.WriteMessage(id, data)
+		WriteMessage(id, data)
 		return nil
 	}
 	_, err := getClient().PostToConnection(ctx, &apigatewaymanagementapi.PostToConnectionInput{

@@ -1,13 +1,12 @@
-package service
+package ws
 
 import (
-	"backend/pkg/ws"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 )
 
 func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) {
-	var message ws.Message
+	var message Message
 	_, err := message.Decode([]byte(body))
 	if err != nil {
 		return

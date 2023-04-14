@@ -1,7 +1,7 @@
 package main
 
 import (
-	localserver "backend/pkg/local-server"
+	localserver "backend/pkg/ws"
 	"fmt"
 	"net"
 	"os"
