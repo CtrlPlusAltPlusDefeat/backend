@@ -13,6 +13,7 @@ func GetConfig() aws.Config {
 		config.WithRegion("eu-west-1"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+
 				dbUrl := os.Getenv("DYNAMO_DB_URL")
 				var endpoint string
 				if len(dbUrl) == 0 {
@@ -21,6 +22,7 @@ func GetConfig() aws.Config {
 					endpoint = "http://dynamo-local:8000"
 				}
 				return aws.Endpoint{URL: endpoint}, nil
+
 			})),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
