@@ -1,8 +1,8 @@
 package main
 
 import (
-	"backend/src/aws"
-	dynamodb2 "backend/src/aws/dynamodb"
+	"backend/pkg/aws-helpers"
+	dynamodb2 "backend/pkg/aws-helpers/dynamodb"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -30,12 +30,13 @@ func HandleLambdaEvent() (LambdaResponse, error) {
 
 	tableList := TableList{Tables: tables}
 	encodedJson, _ := json.Marshal(tableList)
+
 	return LambdaResponse{Body: fmt.Sprintf("%s", encodedJson)}, nil
 }
 
 // init is called when lambda is booted up
 func init() {
-	dbClient = dynamodb.NewFromConfig(aws.GetConfig())
+	dbClient = dynamodb.NewFromConfig(aws_helpers.GetConfig())
 	tableBasics = dynamodb2.TableBasics{DynamoDbClient: dbClient}
 	_, err := tableBasics.CreateTable("TestTable-Code")
 	if err != nil {
