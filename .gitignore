@@ -16,3 +16,5 @@
 *.user
 *.sum
 *.hcl
+
+.aws-sam
