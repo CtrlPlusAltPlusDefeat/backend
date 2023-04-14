@@ -13,7 +13,7 @@ type connection struct {
 	DynamoDbClient *dynamodb.Client
 }
 
-const table = "connections"
+const table = "Connection"
 
 // Add adds a connectionId to the DynamoDB table
 func (basics TableBasics) Add(connectionId string) error {

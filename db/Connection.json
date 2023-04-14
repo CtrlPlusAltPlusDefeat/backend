@@ -1,14 +1,14 @@
 {
-  "TableName": "TomsTestTable",
+  "TableName": "Connection",
   "KeySchema": [
     {
-      "AttributeName": "id",
+      "AttributeName": "ConnectionId",
       "KeyType": "HASH"
     }
   ],
   "AttributeDefinitions": [
     {
-      "AttributeName": "id",
+      "AttributeName": "ConnectionId",
       "AttributeType": "N"
     }
   ],
