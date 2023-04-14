@@ -9,4 +9,5 @@ GOOS=linux GOARCH=amd64 go build -o "$PROJECT_ROOT/dist/test-handler" "$PROJECT_
 GOOS=linux GOARCH=amd64 go build -o "$PROJECT_ROOT/dist/disconnect" "$PROJECT_ROOT/pkg/handlers/disconnect/disconnect.go"
 GOOS=linux GOARCH=amd64 go build -o "$PROJECT_ROOT/dist/connect" "$PROJECT_ROOT/pkg/handlers/connect/connect.go"
 GOOS=linux GOARCH=amd64 go build -o "$PROJECT_ROOT/dist/default" "$PROJECT_ROOT/pkg/handlers/default/default.go"
+
 echo "compiled code"

@@ -16,6 +16,8 @@ var connections = make(map[string]net.Conn)
 func HandleConnection(listener net.Listener) {
 	for {
 		connection, err := listener.Accept()
+		fmt.Println("Accepting new connection")
+
 		if err != nil {
 			fmt.Println("Error accepting: ", err.Error())
 			os.Exit(1)

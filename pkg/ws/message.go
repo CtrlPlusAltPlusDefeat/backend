@@ -15,3 +15,5 @@ func (message *Message) Decode(data []byte) (*Message, error) {
 func (message *Message) Encode() ([]byte, error) {
 	return json.Marshal(message)
 }
+
+
