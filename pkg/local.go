@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/pkg/handlers"
+	"bufio"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
@@ -38,19 +39,41 @@ func closeListener(listener net.Listener) {
 
 func handleConnection(listener net.Listener) {
 	for {
-		// Listen for an incoming connection.
 		connection, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Error accepting: ", err.Error())
 			os.Exit(1)
 		}
-		handler, err := handlers.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
-			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: "", RequestID: ""},
-		})
+		acceptConnection(connection)
+	}
+}
+
+func acceptConnection(connection net.Conn) {
+	//new connection
+	connectionId := fmt.Sprintf("id-%s-%s", connection.LocalAddr(), connection.RemoteAddr())
+	_, err := handlers.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
+	})
+	if err != nil {
+		return
+	}
+
+	// Make a buffer to hold incoming data.
+	scanner := bufio.NewScanner(connection)
+	// todo path this to handlers.DefaultHandler
+	// todo look into programmatically writing to socket and apigateway connection
+	for scanner.Scan() {
+		message := scanner.Text()
+		fmt.Printf("[server/Connection][%s] Message Received:%s", connectionId, message)
+
+		response := fmt.Sprintf("[server/Connection][%s] Received message. Trying to route it", connectionId)
+		_, err := connection.Write([]byte(response))
 		if err != nil {
 			return
 		}
+	}
 
-
+	if err := scanner.Err(); err != nil {
+		fmt.Println("[server/Connection] Error reading: ", err.Error())
 	}
 }
