@@ -7,7 +7,7 @@ import (
 
 func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) {
 	var message Message
-	_, err := message.Decode([]byte(body))
+	err := message.Decode([]byte(body))
 	if err != nil {
 		fmt.Println("Error decoding message", err)
 		return
