@@ -52,6 +52,7 @@ func DefaultHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 	fmt.Println("DefaultHandler")
 	fmt.Println("requestId", req.RequestContext.RequestID)
 	fmt.Println("connectionId", req.RequestContext.ConnectionID)
+	fmt.Println("received", req.Body)
 
 	Route(&req.RequestContext, req.Body)
 

@@ -21,7 +21,7 @@ func HandleConnection(listener net.Listener) {
 			fmt.Println("Error accepting: ", err.Error())
 			os.Exit(1)
 		}
-		acceptConnection(connection)
+		go acceptConnection(connection)
 	}
 }
 
@@ -41,16 +41,17 @@ func acceptConnection(connection net.Conn) {
 	scanner := bufio.NewScanner(connection)
 	for scanner.Scan() {
 		message := scanner.Text()
+		fmt.Println("message", message, len(message))
 		_, err = DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
 			Body:           message,
 		})
 		if err != nil {
-			return
+			panic(err)
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
+	if err = scanner.Err(); err != nil {
 		fmt.Println("[server/Connection] Error reading: ", err.Error())
 	}
 }
