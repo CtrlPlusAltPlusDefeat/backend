@@ -16,9 +16,7 @@ import (
 
 // ConnectHandler we want to store the connection information in db here and return an ok response
 func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
-	fmt.Println("ConnectHandler")
-	fmt.Println("requestId", req.RequestContext.RequestID)
-	fmt.Println("connectionId", req.RequestContext.ConnectionID)
+	fmt.Printf("ConnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
 	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
 	connectionTable := db.ConnectionTable{DynamoDbClient: dbClient}
@@ -33,13 +31,12 @@ func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 
 // DisconnectHandler we want to delete the connection information from db here and return an ok response
 func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
-	fmt.Println("requestId", req.RequestContext.RequestID)
-	fmt.Println("connectionId", req.RequestContext.ConnectionID)
+	fmt.Printf("DisconnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
 	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
 	connectionTable := db.ConnectionTable{DynamoDbClient: dbClient}
 
-	err := connectionTable.Remove(req.RequestContext.ConnectionID)
+	err := connectionTable.Remove(db.Connection{ConnectionId: req.RequestContext.ConnectionID})
 	if err != nil {
 		return apigateway.Response{}, err
 	}
@@ -49,12 +46,8 @@ func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRe
 
 // DefaultHandler this is where all normal requests will come in
 func DefaultHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
-	fmt.Println("DefaultHandler")
-	fmt.Println("requestId", req.RequestContext.RequestID)
-	fmt.Println("connectionId", req.RequestContext.ConnectionID)
-	fmt.Println("received", req.Body)
+	fmt.Printf("DefaultHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
 	Route(&req.RequestContext, req.Body)
-
 	return apigateway.OkResponse(), nil
 }

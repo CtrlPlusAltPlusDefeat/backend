@@ -34,12 +34,16 @@ func (conn ConnectionTable) Add(connection Connection) error {
 	return err
 }
 
-func (conn ConnectionTable) Remove(connectionId string) error {
-	_, err := conn.DynamoDbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
-		TableName: aws.String(table), ConditionExpression: aws.String(fmt.Sprintf("ConnectionId=%s", connectionId)),
+func (conn ConnectionTable) Remove(connection Connection) error {
+	item, err := attributevalue.MarshalMap(connection)
+	if err != nil {
+		panic(err)
+	}
+	_, err = conn.DynamoDbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		TableName: aws.String(table), Key: item,
 	})
 	if err != nil {
-		log.Printf("Couldn't delete %v from the table %s. Here's why: %v\n", connectionId, table, err)
+		log.Printf("Couldn't delete %v from the table %s. Here's why: %v\n", connection.ConnectionId, table, err)
 	}
 	return err
 }
@@ -56,9 +60,9 @@ func (conn ConnectionTable) GetAll() []Connection {
 	}
 	for _, item := range scan.Items {
 		var connection Connection
-		err = attributevalue.UnmarshalMap(item, connection)
+		err = attributevalue.UnmarshalMap(item, &connection)
 		if err != nil {
-			log.Fatalf("Error unmarshalling: %s", err)
+			log.Fatalf("Error unmarshalling dyanmodb map: %s", err)
 		}
 		connections = append(connections, connection)
 	}

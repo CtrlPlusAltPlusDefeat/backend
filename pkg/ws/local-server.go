@@ -1,34 +1,20 @@
 package ws
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
-	"net"
-	"os"
+	"github.com/gorilla/websocket"
+	"log"
 )
 
-var connections = make(map[string]net.Conn)
+var connections = make(map[string]*websocket.Conn)
 
-func HandleConnection(listener net.Listener) {
-	for {
-		connection, err := listener.Accept()
-		fmt.Println("Accepting new connection")
-
-		if err != nil {
-			fmt.Println("Error accepting: ", err.Error())
-			os.Exit(1)
-		}
-		go acceptConnection(connection)
-	}
-}
-
-func acceptConnection(connection net.Conn) {
+func HandleConnection(conn *websocket.Conn) {
 	//new connection
 	connectionId := uuid.New().String()
-	connections[connectionId] = connection
+	connections[connectionId] = conn
 
 	_, err := ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
@@ -37,28 +23,35 @@ func acceptConnection(connection net.Conn) {
 		return
 	}
 
-	// Make a buffer to hold incoming data.
-	scanner := bufio.NewScanner(connection)
-	for scanner.Scan() {
-		message := scanner.Text()
-		fmt.Println("message", message, len(message))
+	for {
+		// read in a message
+		_, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// print out that message for clarity
+		log.Println(string(p))
+
 		_, err = DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
-			Body:           message,
+			Body:           string(p),
 		})
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	if err = scanner.Err(); err != nil {
-		fmt.Println("[server/Connection] Error reading: ", err.Error())
 	}
 }
 
 func WriteMessage(connectionId string, data []byte) {
 	connection := connections[connectionId]
-	_, err := connection.Write(data)
+	if connection == nil {
+		_, err := DisconnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
+		})
+		if err != nil {
+			fmt.Println("Error writing message", err)
+		}
+		return
+	}
+	err := connection.WriteMessage(1, data)
 	if err != nil {
 		fmt.Println("Error writing message", err)
 		return

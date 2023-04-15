@@ -3,7 +3,6 @@ package ws
 import (
 	"backend/pkg/aws-helpers"
 	"context"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
 	"os"
@@ -22,7 +21,6 @@ func Send(ctx context.Context, id string, data []byte) error {
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
 	if local == "1" {
-		fmt.Println("Using Local Websocket server")
 		WriteMessage(id, data)
 		return nil
 	}

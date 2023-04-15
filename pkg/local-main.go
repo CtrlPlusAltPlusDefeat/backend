@@ -3,9 +3,17 @@ package main
 import (
 	localserver "backend/pkg/ws"
 	"fmt"
-	"net"
+	"github.com/gorilla/websocket"
+	"log"
+	"net/http"
 	"os"
 )
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin:     func(r *http.Request) bool { return true },
+}
 
 func main() {
 	arguments := os.Args
@@ -18,22 +26,23 @@ func main() {
 	_ = os.Setenv("LOCAL_WEBSOCKET_SERVER", "1")
 	_ = os.Setenv("DYNAMO_DB_URL", "http://localhost:8000")
 
+	println("Listening on port http://localhost:8080")
 	//Listen for incoming connections.
-	listener, err := net.Listen("tcp", ":"+arguments[1])
-	if err != nil {
-		fmt.Println("Error listening: ", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("Listening on " + arguments[1])
-
-	//Close the listener when the application closes.
-	defer closeListener(listener)
-	localserver.HandleConnection(listener)
+	http.HandleFunc("/", wsEndpoint)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func closeListener(listener net.Listener) {
-	err := listener.Close()
+func wsEndpoint(w http.ResponseWriter, r *http.Request) {
+	// upgrade this connection to a WebSocket
+	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
+
+	log.Println("Client Connected")
+	if err != nil {
+		log.Println(err)
+	}
+
+	localserver.HandleConnection(ws)
 }

@@ -8,8 +8,5 @@ aws dynamodb create-table --cli-input-json file://../db/Connection.json --endpoi
 echo "Tables:"
 aws dynamodb list-tables --endpoint-url "http://localhost:8000"
 
-echo "Compiling code"
-./compile-go.sh
-
 #sam local start-api --docker-network "backend_local-api-network"
 go run ../pkg/local-main.go 443

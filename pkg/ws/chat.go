@@ -14,12 +14,16 @@ func HandleChat(requestContext *events.APIGatewayWebsocketProxyRequestContext, m
 	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
 	connectionTable := db.ConnectionTable{DynamoDbClient: dbClient}
 	connections := connectionTable.GetAll()
-	fmt.Println("Sending ", message.Data, " to all connections")
+	fmt.Println("Sending ", string(message.Data), " to all connections")
+
+	m := Message{}
+	response, _ := m.EncodeChatMessage(requestContext.ConnectionID, string(message.Data))
+
 	for _, con := range connections {
 		if con.ConnectionId == requestContext.ConnectionID {
 			continue
 		}
-		err := Send(context.TODO(), con.ConnectionId, message.Data)
+		err := Send(context.TODO(), con.ConnectionId, response)
 		if err != nil {
 			log.Fatalf("Error sending: %s", err)
 		}
