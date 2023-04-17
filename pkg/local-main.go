@@ -1,8 +1,11 @@
 package main
 
 import (
-	localserver "backend/pkg/ws"
+	"backend/pkg/ws"
+	"context"
 	"fmt"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -44,5 +47,35 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	localserver.HandleConnection(ws)
+	handleConnection(ws)
+}
+
+func handleConnection(conn *websocket.Conn) {
+	//new connection
+	connectionId := uuid.New().String()
+	ws.LocalConnections[connectionId] = conn
+
+	_, err := ws.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
+	})
+
+	if err != nil {
+		return
+	}
+
+	for {
+		// read in a message
+		_, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		// print out that message for clarity
+		log.Println(string(p))
+
+		_, err = ws.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
+			Body:           string(p),
+		})
+	}
 }

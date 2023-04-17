@@ -3,10 +3,15 @@ package ws
 import (
 	"backend/pkg/aws-helpers"
 	"context"
+	"fmt"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
+	"github.com/gorilla/websocket"
 	"os"
 )
+
+var LocalConnections = make(map[string]*websocket.Conn)
 
 func getClient() *apigatewaymanagementapi.Client {
 	return apigatewaymanagementapi.NewFromConfig(aws_helpers.GetConfig())
@@ -21,7 +26,7 @@ func Send(ctx context.Context, id string, data []byte) error {
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
 	if local == "1" {
-		WriteMessage(id, data)
+		writeMessage(id, data)
 		return nil
 	}
 	_, err := getClient().PostToConnection(ctx, &apigatewaymanagementapi.PostToConnectionInput{
@@ -29,4 +34,22 @@ func Send(ctx context.Context, id string, data []byte) error {
 		ConnectionId: aws.String(id),
 	})
 	return err
+}
+
+func writeMessage(connectionId string, data []byte) {
+	connection := LocalConnections[connectionId]
+	if connection == nil {
+		_, err := DisconnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
+		})
+		if err != nil {
+			fmt.Println("Error writing message", err)
+		}
+		return
+	}
+	err := connection.WriteMessage(1, data)
+	if err != nil {
+		fmt.Println("Error writing message", err)
+		return
+	}
 }
