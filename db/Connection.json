@@ -9,7 +9,7 @@
   "AttributeDefinitions": [
     {
       "AttributeName": "ConnectionId",
-      "AttributeType": "N"
+      "AttributeType": "S"
     }
   ],
   "ProvisionedThroughput": {

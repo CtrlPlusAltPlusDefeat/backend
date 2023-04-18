@@ -10,6 +10,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.21
 	github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi v1.11.8
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.4
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.5.0
+
 )
 
 require (

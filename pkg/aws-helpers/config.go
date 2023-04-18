@@ -2,9 +2,11 @@ package aws_helpers
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"os"
 )
 
 func GetConfig() aws.Config {
@@ -12,7 +14,17 @@ func GetConfig() aws.Config {
 		config.WithRegion("eu-west-1"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: "http://dynamo-local:8000"}, nil
+
+				dbUrl := os.Getenv("DYNAMO_DB_URL")
+				fmt.Println("DYNAMO_DB_URL:", dbUrl)
+				var endpoint string
+				if len(dbUrl) > 0 {
+					endpoint = dbUrl
+				} else {
+					endpoint = "http://dynamo-local:8000"
+				}
+				return aws.Endpoint{URL: endpoint}, nil
+
 			})),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
