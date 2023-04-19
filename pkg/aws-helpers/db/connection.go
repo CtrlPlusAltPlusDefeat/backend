@@ -22,12 +22,11 @@ const table = "Connection"
 // Add adds a connectionId to the DynamoDB table
 func (conn ConnectionTable) Add(connection Connection) error {
 	item, err := attributevalue.MarshalMap(connection)
-	if err != nil {
-		panic(err)
+	if err == nil {
+		_, err = conn.DynamoDbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+			TableName: aws.String(table), Item: item,
+		})
 	}
-	_, err = conn.DynamoDbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
-		TableName: aws.String(table), Item: item,
-	})
 	if err != nil {
 		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", connection.ConnectionId, table, err)
 	}
@@ -36,19 +35,18 @@ func (conn ConnectionTable) Add(connection Connection) error {
 
 func (conn ConnectionTable) Remove(connection Connection) error {
 	item, err := attributevalue.MarshalMap(connection)
-	if err != nil {
-		panic(err)
+	if err == nil {
+		_, err = conn.DynamoDbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+			TableName: aws.String(table), Key: item,
+		})
 	}
-	_, err = conn.DynamoDbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
-		TableName: aws.String(table), Key: item,
-	})
 	if err != nil {
 		log.Printf("Couldn't delete %v from the table %s. Here's why: %v\n", connection.ConnectionId, table, err)
 	}
 	return err
 }
 
-func (conn ConnectionTable) GetAll() []Connection {
+func (conn ConnectionTable) GetAll() ([]Connection, error) {
 	fmt.Println("Getting all connections")
 
 	var connections []Connection
@@ -56,7 +54,8 @@ func (conn ConnectionTable) GetAll() []Connection {
 		TableName: aws.String(table),
 	})
 	if err != nil {
-		log.Fatalf("Error scanning db: %s", err)
+		log.Printf("Error scanning db: %s", err)
+		return connections, err
 	}
 	for _, item := range scan.Items {
 		var connection Connection
@@ -66,5 +65,5 @@ func (conn ConnectionTable) GetAll() []Connection {
 		}
 		connections = append(connections, connection)
 	}
-	return connections
+	return connections, nil
 }
