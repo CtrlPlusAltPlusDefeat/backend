@@ -34,6 +34,7 @@ func GetConfig() aws.Config {
 		}),
 	)
 	if err != nil {
+		//we panic here because this is a fatal error, we cannot continue from this
 		panic(err)
 	}
 	return cfg

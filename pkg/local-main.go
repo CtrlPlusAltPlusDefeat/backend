@@ -1,6 +1,7 @@
 package main
 
 import (
+	sockethelpers "backend/pkg/socket-helpers"
 	"backend/pkg/ws"
 	"context"
 	"fmt"
@@ -53,7 +54,7 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 func handleConnection(conn *websocket.Conn) {
 	//new connection
 	connectionId := uuid.New().String()
-	ws.LocalConnections[connectionId] = conn
+	sockethelpers.LocalConnections[connectionId] = conn
 
 	_, err := ws.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
