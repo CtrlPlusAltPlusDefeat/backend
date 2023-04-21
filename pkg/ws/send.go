@@ -1,14 +1,13 @@
-package socket_helpers
+package ws
 
 import (
-	awshelpers "backend/pkg/aws-helpers"
-	"backend/pkg/aws-helpers/db"
+	"backend/pkg/aws-helpers"
+	"backend/pkg/db"
 	"context"
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi/types"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/smithy-go"
 	"github.com/gorilla/websocket"
 	"log"
@@ -18,7 +17,7 @@ import (
 var LocalConnections = make(map[string]*websocket.Conn)
 
 func getClient() *apigatewaymanagementapi.Client {
-	return apigatewaymanagementapi.NewFromConfig(awshelpers.GetConfig())
+	return apigatewaymanagementapi.NewFromConfig(aws_helpers.GetConfig())
 }
 
 // Send sends the provided data to the provided Amazon API Gateway connection ID. A common failure scenario which
@@ -86,8 +85,6 @@ func handleError(err error, id string) error {
 
 // handle disconnecting connections
 func deleteConnection(id string) error {
-	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
-	connectionTable := db.ConnectionTable{DynamoDbClient: dbClient}
 	log.Printf("Deleting connection Id: %s", id)
-	return connectionTable.Remove(db.Connection{ConnectionId: id})
+	return db.GetConnectionDb().Remove(db.Connection{ConnectionId: id})
 }

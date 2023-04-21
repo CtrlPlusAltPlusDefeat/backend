@@ -1,8 +1,7 @@
-package ws
+package route
 
 import (
-	"backend/pkg/services"
-	sockethelpers "backend/pkg/socket-helpers"
+	"backend/pkg/models"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -10,7 +9,7 @@ import (
 // Message Generic wrapper for all websocket messages
 
 func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) {
-	var message sockethelpers.Message
+	var message models.Wrapper
 	err := message.Decode([]byte(body))
 	if err != nil {
 		fmt.Println("Error decoding message", err)
@@ -20,7 +19,7 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 	fmt.Println("Route ", message.Service)
 	switch message.Service {
 	case "chat":
-		services.HandleChat(context, message)
+		HandleChat(context, message)
 		break
 	}
 

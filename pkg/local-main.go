@@ -1,7 +1,7 @@
 package main
 
 import (
-	sockethelpers "backend/pkg/socket-helpers"
+	"backend/pkg/route"
 	"backend/pkg/ws"
 	"context"
 	"fmt"
@@ -54,9 +54,9 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 func handleConnection(conn *websocket.Conn) {
 	//new connection
 	connectionId := uuid.New().String()
-	sockethelpers.LocalConnections[connectionId] = conn
+	ws.LocalConnections[connectionId] = conn
 
-	_, err := ws.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+	_, err := route.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
 	})
 
@@ -74,7 +74,7 @@ func handleConnection(conn *websocket.Conn) {
 		// print out that message for clarity
 		log.Println(string(p))
 
-		_, err = ws.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+		_, err = route.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
 			Body:           string(p),
 		})

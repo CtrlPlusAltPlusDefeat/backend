@@ -1,6 +1,7 @@
 package db
 
 import (
+	awshelpers "backend/pkg/aws-helpers"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,7 +10,7 @@ import (
 	"log"
 )
 
-type ConnectionTable struct {
+type ConnectionDb struct {
 	DynamoDbClient *dynamodb.Client
 }
 
@@ -19,8 +20,13 @@ type Connection struct {
 
 const table = "Connection"
 
+func GetConnectionDb() ConnectionDb {
+	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
+	return ConnectionDb{DynamoDbClient: dbClient}
+}
+
 // Add adds a connectionId to the DynamoDB table
-func (conn ConnectionTable) Add(connection Connection) error {
+func (conn ConnectionDb) Add(connection Connection) error {
 	item, err := attributevalue.MarshalMap(connection)
 	if err == nil {
 		_, err = conn.DynamoDbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
@@ -33,7 +39,7 @@ func (conn ConnectionTable) Add(connection Connection) error {
 	return err
 }
 
-func (conn ConnectionTable) Remove(connection Connection) error {
+func (conn ConnectionDb) Remove(connection Connection) error {
 	item, err := attributevalue.MarshalMap(connection)
 	if err == nil {
 		_, err = conn.DynamoDbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
@@ -46,7 +52,7 @@ func (conn ConnectionTable) Remove(connection Connection) error {
 	return err
 }
 
-func (conn ConnectionTable) GetAll() ([]Connection, error) {
+func (conn ConnectionDb) GetAll() ([]Connection, error) {
 	fmt.Println("Getting all connections")
 
 	var connections []Connection
