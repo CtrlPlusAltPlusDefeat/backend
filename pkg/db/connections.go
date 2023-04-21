@@ -53,6 +53,7 @@ func (conn ConnectionDb) Remove(connection Connection) error {
 }
 
 func (conn ConnectionDb) GetAll() ([]Connection, error) {
+
 	fmt.Println("Getting all connections")
 
 	var connections []Connection
