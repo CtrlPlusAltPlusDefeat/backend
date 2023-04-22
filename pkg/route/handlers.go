@@ -16,7 +16,7 @@ import (
 func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	fmt.Printf("ConnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
-	err := db.GetConnectionDb().Add(db.Connection{ConnectionId: req.RequestContext.ConnectionID})
+	err := db.Connection.GetClient().Add(db.ConnectionItem{ConnectionId: req.RequestContext.ConnectionID})
 	if err != nil {
 		return apigateway.Response{}, err
 	}
@@ -28,7 +28,7 @@ func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	fmt.Printf("DisconnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
-	err := db.GetConnectionDb().Remove(db.Connection{ConnectionId: req.RequestContext.ConnectionID})
+	err := db.Connection.GetClient().Remove(db.ConnectionItem{ConnectionId: req.RequestContext.ConnectionID})
 	if err != nil {
 		return apigateway.Response{}, err
 	}

@@ -86,5 +86,5 @@ func handleError(err error, id string) error {
 // handle disconnecting connections
 func deleteConnection(id string) error {
 	log.Printf("Deleting connection Id: %s", id)
-	return db.GetConnectionDb().Remove(db.Connection{ConnectionId: id})
+	return db.Connection.GetClient().Remove(db.ConnectionItem{ConnectionId: id})
 }

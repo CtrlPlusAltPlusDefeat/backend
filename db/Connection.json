@@ -4,11 +4,19 @@
     {
       "AttributeName": "ConnectionId",
       "KeyType": "HASH"
+    },
+    {
+      "AttributeName": "SessionId",
+      "KeyType": "HASH"
     }
   ],
   "AttributeDefinitions": [
     {
       "AttributeName": "ConnectionId",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "SessionId",
       "AttributeType": "S"
     }
   ],
