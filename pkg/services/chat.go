@@ -5,17 +5,26 @@ import (
 	"backend/pkg/models"
 	"backend/pkg/ws"
 	"context"
-	"fmt"
 	"log"
 )
 
-func BroadcastMessage(connectionId string, chatMessage models.ChatMessageRequest) error {
-	connections, err := db.GetConnectionDb().GetAll()
+type chatT struct {
+}
+
+var Chat chatT
+
+func (chat chatT) BroadcastMessage(connectionId string, chatMessage models.ChatMessageRequest) error {
+	connections, err := db.Connection.GetClient().GetAll()
 	if err != nil {
 		return err
 	}
-	response, _ := models.GetChatMessageResponse(connectionId, chatMessage.Text)
-	fmt.Println("Sending ", chatMessage.Text, " to all connections")
+
+	response, err := models.ChatMessageResponse{Text: connectionId, ConnectionId: chatMessage.Text}.Encode()
+	if err != nil {
+		return err
+	}
+
+	log.Println("Sending ", chatMessage.Text, " to all connections")
 	for _, con := range connections {
 		if con.ConnectionId == connectionId {
 			continue

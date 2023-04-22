@@ -2,7 +2,6 @@ package ws
 
 import (
 	"backend/pkg/aws-helpers"
-	"backend/pkg/db"
 	"context"
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -25,6 +24,7 @@ func getClient() *apigatewaymanagementapi.Client {
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
 func Send(ctx context.Context, id string, data []byte) error {
+	log.Printf("Send: %s", data)
 	// check env vars to see if its running locally if so we can pull connection from map and write
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
@@ -44,12 +44,12 @@ func Send(ctx context.Context, id string, data []byte) error {
 func writeMessage(connectionId string, data []byte) error {
 	connection := LocalConnections[connectionId]
 	if connection == nil {
-		return deleteConnection(connectionId)
+		return Disconnect(connectionId)
 	}
 	err := connection.WriteMessage(1, data)
 	isClosed := websocket.IsCloseError(err)
 	if isClosed {
-		return deleteConnection(connectionId)
+		return Disconnect(connectionId)
 	}
 	return err
 }
@@ -69,7 +69,7 @@ func handleError(err error, id string) error {
 		var serializationError *smithy.SerializationError
 		if errors.As(err, &serializationError) {
 			log.Printf("SerializationError, delete stale connection details from cache: %s", id)
-			return deleteConnection(id)
+			return Disconnect(id)
 		}
 	}
 
@@ -77,14 +77,8 @@ func handleError(err error, id string) error {
 		var gone *types.GoneException
 		if errors.As(err, &gone) {
 			log.Printf("GoneException, delete stale connection details from cache: %s", id)
-			return deleteConnection(id)
+			return Disconnect(id)
 		}
 	}
 	return err
-}
-
-// handle disconnecting connections
-func deleteConnection(id string) error {
-	log.Printf("Deleting connection Id: %s", id)
-	return db.GetConnectionDb().Remove(db.Connection{ConnectionId: id})
 }
