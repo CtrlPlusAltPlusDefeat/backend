@@ -5,7 +5,6 @@ import (
 	"backend/pkg/models"
 	"backend/pkg/ws"
 	"context"
-	"fmt"
 	"log"
 )
 
@@ -25,7 +24,7 @@ func (chat chatT) BroadcastMessage(connectionId string, chatMessage models.ChatM
 		return err
 	}
 
-	fmt.Println("Sending ", chatMessage.Text, " to all connections")
+	log.Println("Sending ", chatMessage.Text, " to all connections")
 	for _, con := range connections {
 		if con.ConnectionId == connectionId {
 			continue

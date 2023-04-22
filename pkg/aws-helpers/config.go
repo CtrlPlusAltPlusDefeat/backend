@@ -2,7 +2,6 @@ package aws_helpers
 
 import (
 	"context"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -14,9 +13,7 @@ func GetConfig() aws.Config {
 		config.WithRegion("eu-west-1"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
 			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-
 				dbUrl := os.Getenv("DYNAMO_DB_URL")
-				fmt.Println("DYNAMO_DB_URL:", dbUrl)
 				var endpoint string
 				if len(dbUrl) > 0 {
 					endpoint = dbUrl

@@ -1,4 +1,7 @@
 #!/bin/sh
+
+#rm -rf ../docker
+
 echo "Starting DynamoDB"
 docker-compose up --wait --force-recreate
 

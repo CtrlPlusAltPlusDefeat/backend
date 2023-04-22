@@ -22,7 +22,7 @@ Create a new session
 }
 ```
 
-Use an existing session
+Use an existing session, this should check no other connections are using it as well as validating it's a `guid`
 
 ```json
 {

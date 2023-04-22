@@ -4,10 +4,6 @@
     {
       "AttributeName": "ConnectionId",
       "KeyType": "HASH"
-    },
-    {
-      "AttributeName": "SessionId",
-      "KeyType": "HASH"
     }
   ],
   "AttributeDefinitions": [
@@ -18,6 +14,24 @@
     {
       "AttributeName": "SessionId",
       "AttributeType": "S"
+    }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "SessionIdIndex",
+      "KeySchema": [
+        {
+          "AttributeName": "SessionId",
+          "KeyType": "HASH"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 1,
+        "WriteCapacityUnits": 1
+      }
     }
   ],
   "ProvisionedThroughput": {

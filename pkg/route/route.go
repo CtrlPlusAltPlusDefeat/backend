@@ -2,8 +2,8 @@ package route
 
 import (
 	"backend/pkg/models"
-	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"log"
 )
 
 type SocketData struct {
@@ -16,11 +16,11 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 	err := message.Decode([]byte(body))
 
 	if err != nil {
-		fmt.Println("Error decoding message", err)
+		log.Println("Error decoding message", err)
 		return
 	}
 
-	fmt.Println("Route ", message.Service)
+	log.Println("Route ", message.Service)
 
 	routeMessage := SocketData{context, message}
 

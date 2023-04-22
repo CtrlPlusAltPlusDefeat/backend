@@ -3,10 +3,10 @@ package db
 import (
 	awshelpers "backend/pkg/aws-helpers"
 	"context"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"log"
 )
 
@@ -22,7 +22,7 @@ type connectionKey struct {
 }
 
 type ConnectionUpdate struct {
-	SessionId string `dynamodbav:"SessionId"`
+	SessionId string `dynamodbav:":SessionId"`
 }
 
 type ConnectionItem struct {
@@ -40,35 +40,31 @@ func (c connection) GetClient() connectionDb {
 }
 
 // Add adds a connectionId to the DynamoDB table
-func (conn connectionDb) Add(connection ConnectionItem) error {
-	item, err := attributevalue.MarshalMap(connection)
-	if err == nil {
-		_, err = conn.dynamo.PutItem(context.TODO(), &dynamodb.PutItemInput{
-			TableName: aws.String(table), Item: item,
-		})
-	}
+func (conn connectionDb) Add(connectionId string) error {
+	_, err := conn.dynamo.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName: aws.String(table), Item: map[string]types.AttributeValue{
+			"ConnectionId": &types.AttributeValueMemberS{Value: connectionId},
+		}})
 	if err != nil {
-		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", connection.ConnectionId, table, err)
+		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", connectionId, table, err)
 	}
 	return err
 }
 
-func (conn connectionDb) Remove(connection ConnectionItem) error {
-	item, err := attributevalue.MarshalMap(connection)
-	if err == nil {
-		_, err = conn.dynamo.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
-			TableName: aws.String(table), Key: item,
-		})
-	}
+func (conn connectionDb) Remove(connectionId string) error {
+	_, err := conn.dynamo.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		TableName: aws.String(table), Key: map[string]types.AttributeValue{
+			"ConnectionId": &types.AttributeValueMemberS{Value: connectionId},
+		}})
 	if err != nil {
-		log.Printf("Couldn't delete %v from the table %s. Here's why: %v\n", connection.ConnectionId, table, err)
+		log.Printf("Couldn't delete %v from the table %s. Here's why: %v\n", connectionId, table, err)
 	}
 	return err
 }
 
 func (conn connectionDb) GetAll() ([]ConnectionItem, error) {
 
-	fmt.Println("Getting all connections")
+	log.Println("Getting all connections")
 
 	var connections []ConnectionItem
 	scan, err := conn.dynamo.Scan(context.TODO(), &dynamodb.ScanInput{
@@ -82,7 +78,7 @@ func (conn connectionDb) GetAll() ([]ConnectionItem, error) {
 		var connection ConnectionItem
 		err = attributevalue.UnmarshalMap(item, &connection)
 		if err != nil {
-			log.Fatalf("Error unmarshalling dyanmodb map: %s", err)
+			log.Printf("Error unmarshalling dyanmodb map: %s", err)
 		}
 		connections = append(connections, connection)
 	}
@@ -94,7 +90,7 @@ func (conn connectionDb) Get(connectionId string) (ConnectionItem, error) {
 	var connectionItem ConnectionItem
 
 	if err != nil {
-		log.Fatalf("Error marshalling dyanmodb map: %s", err)
+		log.Printf("Error marshalling dyanmodb map: %s", err)
 		return connectionItem, err
 	}
 
@@ -107,30 +103,64 @@ func (conn connectionDb) Get(connectionId string) (ConnectionItem, error) {
 	}
 	err = attributevalue.UnmarshalMap(res.Item, &connectionItem)
 	if err != nil {
-		log.Fatalf("Error unmarshalling dyanmodb map: %s", err)
+		log.Printf("Error unmarshalling dyanmodb map: %s", err)
 	}
 	return connectionItem, err
 }
 
+func (conn connectionDb) GetBySessionId(sessionId string) ([]ConnectionItem, error) {
+	var connections []ConnectionItem
+
+	output, err := conn.dynamo.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:              aws.String(table),
+		IndexName:              aws.String("SessionIdIndex"),
+		KeyConditionExpression: aws.String("#sessionId = :v_sessionId"),
+		ExpressionAttributeNames: map[string]string{
+			"#sessionId": "SessionId",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":v_sessionId": &types.AttributeValueMemberS{Value: sessionId},
+		}})
+
+	for _, item := range output.Items {
+		var connection ConnectionItem
+		err = attributevalue.UnmarshalMap(item, &connection)
+		if err != nil {
+			log.Printf("Error unmarshalling dyanmodb map: %s", err)
+		}
+		connections = append(connections, connection)
+	}
+
+	if err != nil {
+		log.Printf("Couldn't Query table %s. Here's why: %v\n", table, err)
+	}
+	return connections, err
+}
+
 func (conn connectionDb) Update(connectionId string, update ConnectionUpdate) error {
+	log.Printf("Update %s", connectionId)
 	key, err := attributevalue.MarshalMap(connectionKey{connectionId})
 	if err != nil {
-		log.Fatalf("Error marshalling dyanmodb map: %s", err)
+		log.Printf("Error marshalling dyanmodb map: %s", err)
 		return err
 	}
 
 	updateValues, err := attributevalue.MarshalMap(update)
 	if err != nil {
-		log.Fatalf("Error marshalling dyanmodb map: %s", err)
+		log.Printf("Error marshalling dyanmodb map: %s", err)
 		return err
 	}
 
 	_, err = conn.dynamo.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
-		TableName: aws.String(table), Key: key, ExpressionAttributeValues: updateValues, UpdateExpression: aws.String("set info.rating = :r")})
+		TableName:                 aws.String(table),
+		Key:                       key,
+		ExpressionAttributeValues: updateValues,
+		UpdateExpression:          aws.String("set SessionId = :SessionId"),
+		ReturnValues:              types.ReturnValueUpdatedNew,
+	})
 
 	if err != nil {
 		log.Printf("Couldn't update %v from the table %s. Here's why: %v\n", connectionId, table, err)
-		return err
 	}
 	return err
 }
