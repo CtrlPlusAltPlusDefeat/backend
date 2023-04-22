@@ -1,10 +1,10 @@
 package main
 
 import (
-	"backend/pkg/ws"
+	"backend/pkg/route"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 func main() {
-	lambda.Start(ws.DisconnectHandler)
+	lambda.Start(route.DisconnectHandler)
 }
