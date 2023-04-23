@@ -22,17 +22,17 @@ jobs:
    - name: Upload Disconnect Build
      uses: actions/upload-artifact@v1
      with:
-      name: build
+      name: build-disconnect
       path: dist/disconnect
 
    - name: Upload Connect Build
      uses: actions/upload-artifact@v1
      with:
-      name: build
+      name: build-connect
       path: dist/connect
 
    - name: Upload Default Build
      uses: actions/upload-artifact@v1
      with:
-      name: build
+      name: build-default
       path: dist/default
