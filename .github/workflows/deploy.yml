@@ -1,0 +1,25 @@
+name: Deploy
+
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency: deploy
+
+jobs:
+  apply:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    environment: aws
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Assets
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: build
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{ github.event.pull_request.head.sha }}
+          path: ./build
