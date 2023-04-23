@@ -16,23 +16,23 @@ jobs:
      with:
         go-version: 1.15
 
-    - name: Build
-      run: ./scripts/compile-go.sh 
+   - name: Build
+     run: ./scripts/compile-go.sh 
 
-    - name: Upload Disconnect Build
-      uses: actions/upload-artifact@v1
-      with:
-       name: build
-       path: dist/disconnect
+   - name: Upload Disconnect Build
+     uses: actions/upload-artifact@v1
+     with:
+      name: build-disconnect
+      path: dist/disconnect
 
-    - name: Upload Connect Build
-      uses: actions/upload-artifact@v1
-      with:
-       name: build
-       path: dist/connect
+   - name: Upload Connect Build
+     uses: actions/upload-artifact@v1
+     with:
+      name: build-connect
+      path: dist/connect
 
-    - name: Upload Default Build
-      uses: actions/upload-artifact@v1
-      with:
-       name: build
-       path: dist/default
+   - name: Upload Default Build
+     uses: actions/upload-artifact@v1
+     with:
+      name: build-default
+      path: dist/default
