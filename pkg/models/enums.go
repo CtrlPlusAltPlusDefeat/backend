@@ -3,11 +3,13 @@ package models
 type service struct {
 	Player string
 	Chat   string
+	Lobby  string
 }
 
 var Service = service{
 	Player: "player",
 	Chat:   "chat",
+	Lobby:  "lobby",
 }
 
 ////// Player
@@ -55,5 +57,33 @@ var Chat = chatModel{
 	},
 	ServerActions: chatServerActions{
 		Receive: "receive",
+	},
+}
+
+// //// Lobby
+type lobbyClientAction struct {
+	Create string
+	Join   string
+}
+type lobbyServerAction struct {
+	Joined       string
+	PlayerJoined string
+	PlayerLeft   string
+}
+
+type lobbyModel struct {
+	ClientActions lobbyClientAction
+	ServerActions lobbyServerAction
+}
+
+var Lobby = lobbyModel{
+	ClientActions: lobbyClientAction{
+		Create: "create",
+		Join:   "join",
+	},
+	ServerActions: lobbyServerAction{
+		Joined:       "joined",
+		PlayerJoined: "player-joined",
+		PlayerLeft:   "player-left",
 	},
 }

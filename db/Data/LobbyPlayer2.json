@@ -1,0 +1,17 @@
+{
+  "LobbyId": {
+    "S": "123456"
+  },
+  "SessionId": {
+    "S": "session-2"
+  },
+  "Name": {
+    "S": "Tom Test"
+  },
+  "IsAdmin": {
+    "S": "Yes"
+  },
+  "Points": {
+    "S": "100"
+  }
+}

@@ -28,7 +28,7 @@ func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	log.Printf("DisconnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
-	err := ws.Disconnect(req.RequestContext.ConnectionID)
+	err := ws.Disconnect(&req.RequestContext.ConnectionID)
 	if err != nil {
 		return apigateway.Response{}, err
 	}

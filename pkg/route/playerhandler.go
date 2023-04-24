@@ -22,7 +22,7 @@ func playerHandle(socketData *SocketData) {
 	}
 	if err != nil {
 		errorRes, err := models.ErrorResponse{Error: "Something went wrong handling this"}.UseWrapper(socketData.message)
-		err = ws.Send(context.TODO(), socketData.requestContext.ConnectionID, errorRes)
+		err = ws.Send(context.TODO(), &socketData.requestContext.ConnectionID, errorRes)
 		log.Print(err)
 	}
 }

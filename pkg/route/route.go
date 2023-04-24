@@ -1,14 +1,17 @@
 package route
 
 import (
+	"backend/pkg/db"
 	"backend/pkg/models"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"log"
 )
 
 type SocketData struct {
 	requestContext *events.APIGatewayWebsocketProxyRequestContext
 	message        models.Wrapper
+	sessionId      *string
 }
 
 func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) {
@@ -19,17 +22,24 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 		log.Println("Error decoding message", err)
 		return
 	}
-
 	log.Println("Route ", message.Service)
 
-	routeMessage := SocketData{context, message}
+	if message.Service == models.Service.Player {
+		playerHandle(&SocketData{context, message, nil})
+	}
 
+	res, err := db.Connection.Get(context.ConnectionID)
+	if err != nil {
+		return
+	}
+	routeMessage := SocketData{context, message, aws.String(res.SessionId)}
 	switch message.Service {
 	case models.Service.Chat:
 		chatHandle(&routeMessage)
 		break
-	case models.Service.Player:
-		playerHandle(&routeMessage)
+	case models.Service.Lobby:
+		lobbyHandler(&routeMessage)
+		break
 	}
 
 }

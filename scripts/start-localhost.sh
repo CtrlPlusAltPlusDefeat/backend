@@ -1,12 +1,15 @@
 #!/bin/sh
 
-#rm -rf ../docker
+rm -rf ../docker
 
 echo "Starting DynamoDB"
 docker-compose up --wait --force-recreate
 
 echo "Creating tables"
+export AWS_PAGER=""
 aws dynamodb create-table --cli-input-json file://../db/Connection.json --endpoint-url "http://localhost:8000"
+aws dynamodb create-table --cli-input-json file://../db/Lobby.json --endpoint-url "http://localhost:8000"
+aws dynamodb create-table --cli-input-json file://../db/LobbyPlayer.json --endpoint-url "http://localhost:8000"
 
 echo "Tables:"
 aws dynamodb list-tables --endpoint-url "http://localhost:8000"

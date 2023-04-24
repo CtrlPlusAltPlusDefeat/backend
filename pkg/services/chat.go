@@ -35,7 +35,7 @@ func (chat chatT) BroadcastMessage(connectionId string, chatMessage models.ChatM
 }
 
 func sendChat(connectionId string, message []byte) {
-	err := ws.Send(context.TODO(), connectionId, message)
+	err := ws.Send(context.TODO(), &connectionId, message)
 	if err != nil {
 		//we got an error when sending to a client
 		log.Printf("Error sending: %s", err)

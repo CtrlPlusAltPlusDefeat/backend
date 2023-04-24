@@ -46,7 +46,7 @@ func (Player playerT) SetSession(sessionId string, connectionId string) error {
 	if err != nil {
 		return err
 	}
-	return ws.Send(context.TODO(), connectionId, msg)
+	return ws.Send(context.TODO(), &connectionId, msg)
 }
 
 func DestroySession(sessionId string) error {
@@ -56,7 +56,7 @@ func DestroySession(sessionId string) error {
 	}
 	log.Printf("Destroying %d sessions", len(connections))
 	for _, connection := range connections {
-		_ = ws.Disconnect(connection.ConnectionId)
+		_ = ws.Disconnect(&connection.ConnectionId)
 	}
 	return nil
 }

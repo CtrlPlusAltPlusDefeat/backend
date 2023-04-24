@@ -11,9 +11,6 @@ import (
 )
 
 type connection struct {
-}
-
-type connectionDb struct {
 	dynamo *dynamodb.Client
 }
 
@@ -34,13 +31,17 @@ const table = "Connection"
 
 var Connection connection
 
-func (c connection) GetClient() connectionDb {
+func (conn connection) GetClient() connection {
+	if conn.dynamo != nil {
+		return conn
+	}
 	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
-	return connectionDb{dynamo: dbClient}
+	conn.dynamo = dbClient
+	return conn
 }
 
 // Add adds a connectionId to the DynamoDB table
-func (conn connectionDb) Add(connectionId string) error {
+func (conn connection) Add(connectionId string) error {
 	_, err := conn.dynamo.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(table), Item: map[string]types.AttributeValue{
 			"ConnectionId": &types.AttributeValueMemberS{Value: connectionId},
@@ -51,10 +52,10 @@ func (conn connectionDb) Add(connectionId string) error {
 	return err
 }
 
-func (conn connectionDb) Remove(connectionId string) error {
+func (conn connection) Remove(connectionId *string) error {
 	_, err := conn.dynamo.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 		TableName: aws.String(table), Key: map[string]types.AttributeValue{
-			"ConnectionId": &types.AttributeValueMemberS{Value: connectionId},
+			"ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
 		}})
 	if err != nil {
 		log.Printf("Couldn't delete %v from the table %s. Here's why: %v\n", connectionId, table, err)
@@ -62,7 +63,7 @@ func (conn connectionDb) Remove(connectionId string) error {
 	return err
 }
 
-func (conn connectionDb) GetAll() ([]ConnectionItem, error) {
+func (conn connection) GetAll() ([]ConnectionItem, error) {
 
 	log.Println("Getting all connections")
 
@@ -85,7 +86,7 @@ func (conn connectionDb) GetAll() ([]ConnectionItem, error) {
 	return connections, nil
 }
 
-func (conn connectionDb) Get(connectionId string) (ConnectionItem, error) {
+func (conn connection) Get(connectionId string) (ConnectionItem, error) {
 	key, err := attributevalue.MarshalMap(connectionKey{connectionId})
 	var connectionItem ConnectionItem
 
@@ -108,7 +109,7 @@ func (conn connectionDb) Get(connectionId string) (ConnectionItem, error) {
 	return connectionItem, err
 }
 
-func (conn connectionDb) GetBySessionId(sessionId string) ([]ConnectionItem, error) {
+func (conn connection) GetBySessionId(sessionId string) ([]ConnectionItem, error) {
 	var connections []ConnectionItem
 
 	output, err := conn.dynamo.Query(context.TODO(), &dynamodb.QueryInput{
@@ -137,7 +138,7 @@ func (conn connectionDb) GetBySessionId(sessionId string) ([]ConnectionItem, err
 	return connections, err
 }
 
-func (conn connectionDb) Update(connectionId string, update ConnectionUpdate) error {
+func (conn connection) Update(connectionId string, update ConnectionUpdate) error {
 	log.Printf("Update %s", connectionId)
 	key, err := attributevalue.MarshalMap(connectionKey{connectionId})
 	if err != nil {
