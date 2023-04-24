@@ -6,6 +6,7 @@ import (
 	"backend/pkg/ws"
 	"context"
 	"github.com/google/uuid"
+	"log"
 )
 
 type lobbyT struct {
@@ -13,25 +14,28 @@ type lobbyT struct {
 
 var Lobby lobbyT
 
-func (s lobbyT) Create(connectionId *string, sessionId *string) error {
+func (s lobbyT) Create() error {
 	lobbyId := uuid.New().String()
 	err := db.Lobby.Add(lobbyId)
 	if err != nil {
 		return err
 	}
-	return s.Join(lobbyId, connectionId, sessionId, true)
+	return s.Join(lobbyId, true)
 }
 
-func (s lobbyT) Join(lobbyId string, connectionId *string, sessionId *string, isAdmin bool) error {
-	err := db.LobbyPlayer.Add(&lobbyId, sessionId, isAdmin)
+func (s lobbyT) Join(lobbyId string, isAdmin bool) error {
+	player, err := db.LobbyPlayer.Add(&lobbyId, SocketData.SessionId, &SocketData.RequestContext.ConnectionID, isAdmin)
 	if err != nil {
 		return err
 	}
-	onPlayerJoin()
-	return sendLobbyJoin(connectionId, sessionId, &lobbyId)
+	err = onPlayerJoin(&player, &lobbyId)
+	if err != nil {
+		return err
+	}
+	return sendLobbyJoin(&lobbyId)
 }
 
-func sendLobbyJoin(connectionId *string, sessionId *string, lobbyId *string) error {
+func (s lobbyT) Get(lobbyId *string) error {
 	playersRes, err := db.LobbyPlayer.GetPlayers(lobbyId)
 	if err != nil {
 		return err
@@ -46,13 +50,13 @@ func sendLobbyJoin(connectionId *string, sessionId *string, lobbyId *string) err
 			IsAdmin: p.IsAdmin,
 			Points:  p.Points,
 		}
-		if p.SessionId == *sessionId {
+		if p.SessionId == *SocketData.SessionId {
 			thisPlayer = player
 		}
 		allPlayers = append(allPlayers, player)
 	}
 
-	res := models.LobbyJoinResponse{Player: thisPlayer, Lobby: models.LobbyDetails{
+	res := models.LobbyGetResponse{Player: thisPlayer, Lobby: models.LobbyDetails{
 		Players: allPlayers,
 		LobbyId: *lobbyId,
 	}}
@@ -61,9 +65,67 @@ func sendLobbyJoin(connectionId *string, sessionId *string, lobbyId *string) err
 		return err
 	}
 
-	return ws.Send(context.TODO(), connectionId, bytes)
+	return ws.Send(context.TODO(), &SocketData.RequestContext.ConnectionID, bytes)
 }
 
-func onPlayerJoin() {
+func (s lobbyT) NameChange(name *string, lobbyId *string) error {
+	player, err := db.LobbyPlayer.UpdateName(lobbyId, SocketData.SessionId, name)
+	if err != nil {
+		return err
+	}
+	return onPlayerNameChange(&player, lobbyId)
+}
 
+func sendLobbyJoin(lobbyId *string) error {
+	res := models.LobbyJoinResponse{LobbyId: *lobbyId}
+	bytes, err := res.Encode()
+	if err != nil {
+		return err
+	}
+	return ws.Send(context.TODO(), &SocketData.RequestContext.ConnectionID, bytes)
+}
+
+func onPlayerJoin(player *db.Player, lobbyId *string) error {
+
+	response := models.LobbyPlayerJoinResponse{Player: models.LobbyPlayer{
+		Id:      player.Id,
+		Name:    player.Name,
+		IsAdmin: player.IsAdmin,
+		Points:  player.Points,
+	}}
+	bytes, err := response.Encode()
+	if err != nil {
+		log.Printf("onPlayerJoin error encoding response")
+		return err
+	}
+	return sendToLobby(lobbyId, bytes)
+}
+
+func onPlayerNameChange(player *db.Player, lobbyId *string) error {
+	response := models.LobbyNameChangeResponse{Player: models.LobbyPlayer{
+		Id:      player.Id,
+		Name:    player.Name,
+		IsAdmin: player.IsAdmin,
+		Points:  player.Points,
+	}}
+	bytes, err := response.Encode()
+	if err != nil {
+		log.Printf("onPlayerNameChange error encoding response")
+		return err
+	}
+	return sendToLobby(lobbyId, bytes)
+}
+
+func sendToLobby(lobbyId *string, msg []byte) error {
+	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
+	if err != nil {
+		return err
+	}
+	for _, p := range players {
+		err = ws.Send(context.TODO(), &p.ConnectionId, msg)
+		if err != nil {
+			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
+		}
+	}
+	return nil
 }

@@ -9,10 +9,10 @@ import (
 	"log"
 )
 
-func playerHandle(socketData *SocketData) {
-	log.Printf("playerHandle: %s", socketData.message.Action)
+func playerHandle(socketData *models.SocketData) {
+	log.Printf("playerHandle: %s", socketData.Message.Action)
 	var err error
-	switch socketData.message.Action {
+	switch socketData.Message.Action {
 	case models.Player.ClientActions.CreateSession:
 		err = createSession(socketData)
 		break
@@ -21,19 +21,19 @@ func playerHandle(socketData *SocketData) {
 		break
 	}
 	if err != nil {
-		errorRes, err := models.ErrorResponse{Error: "Something went wrong handling this"}.UseWrapper(socketData.message)
-		err = ws.Send(context.TODO(), &socketData.requestContext.ConnectionID, errorRes)
+		errorRes, err := models.ErrorResponse{Error: "Something went wrong handling this"}.UseWrapper(socketData.Message)
+		err = ws.Send(context.TODO(), &socketData.RequestContext.ConnectionID, errorRes)
 		log.Print(err)
 	}
 }
 
-func createSession(socketData *SocketData) error {
-	return services.Player.CreateSession(socketData.requestContext.ConnectionID)
+func createSession(socketData *models.SocketData) error {
+	return services.Player.CreateSession(socketData.RequestContext.ConnectionID)
 }
 
-func useSession(socketData *SocketData) error {
+func useSession(socketData *models.SocketData) error {
 	useSessionReq := models.SessionUseRequest{}
-	err := useSessionReq.Decode(&socketData.message)
+	err := useSessionReq.Decode(&socketData.Message)
 	if err != nil {
 		return err
 	}
@@ -41,6 +41,6 @@ func useSession(socketData *SocketData) error {
 	if err != nil {
 		return err
 	}
-	return services.Player.SetSession(useSessionReq.SessionId, socketData.requestContext.ConnectionID)
+	return services.Player.SetSession(useSessionReq.SessionId, socketData.RequestContext.ConnectionID)
 
 }

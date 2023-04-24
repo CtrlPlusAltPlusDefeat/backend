@@ -8,12 +8,6 @@ import (
 	"log"
 )
 
-type SocketData struct {
-	requestContext *events.APIGatewayWebsocketProxyRequestContext
-	message        models.Wrapper
-	sessionId      *string
-}
-
 func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) {
 	var message models.Wrapper
 	err := message.Decode([]byte(body))
@@ -25,14 +19,14 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 	log.Println("Route ", message.Service)
 
 	if message.Service == models.Service.Player {
-		playerHandle(&SocketData{context, message, nil})
+		playerHandle(&models.SocketData{RequestContext: context, Message: message})
 	}
 
-	res, err := db.Connection.Get(context.ConnectionID)
+	res, err := db.Connection.GetClient().Get(context.ConnectionID)
 	if err != nil {
 		return
 	}
-	routeMessage := SocketData{context, message, aws.String(res.SessionId)}
+	routeMessage := models.SocketData{RequestContext: context, Message: message, SessionId: aws.String(res.SessionId)}
 	switch message.Service {
 	case models.Service.Chat:
 		chatHandle(&routeMessage)

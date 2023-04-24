@@ -7,6 +7,8 @@ import (
 
 func Disconnect(id *string) error {
 	// todo we want to notify lobby that this player has disconnected
+
+	// todo then remove lobby from their connection
 	return deleteConnection(id)
 }
 

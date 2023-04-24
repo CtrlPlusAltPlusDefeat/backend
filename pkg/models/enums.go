@@ -62,13 +62,17 @@ var Chat = chatModel{
 
 // //// Lobby
 type lobbyClientAction struct {
-	Create string
-	Join   string
+	Create  string
+	Join    string
+	SetName string
+	Get     string
 }
 type lobbyServerAction struct {
 	Joined       string
 	PlayerJoined string
 	PlayerLeft   string
+	NameChanged  string
+	Get          string
 }
 
 type lobbyModel struct {
@@ -78,12 +82,16 @@ type lobbyModel struct {
 
 var Lobby = lobbyModel{
 	ClientActions: lobbyClientAction{
-		Create: "create",
-		Join:   "join",
+		Create:  "create",
+		Join:    "join",
+		SetName: "set-name",
+		Get:     "get",
 	},
 	ServerActions: lobbyServerAction{
 		Joined:       "joined",
 		PlayerJoined: "player-joined",
 		PlayerLeft:   "player-left",
+		NameChanged:  "name-change",
+		Get:          "Get",
 	},
 }

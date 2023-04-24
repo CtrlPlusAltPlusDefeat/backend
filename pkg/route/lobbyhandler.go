@@ -6,15 +6,24 @@ import (
 	"log"
 )
 
-func lobbyHandler(socketData *SocketData) {
+func lobbyHandler(socketData *models.SocketData) {
+	log.Printf("lobbyHandler: %s", socketData.Message.Action)
 
 	var err error
-	switch socketData.message.Action {
+	//inject into services
+	services.SocketData = socketData
+	switch socketData.Message.Action {
 	case models.Lobby.ClientActions.Create:
-		err = createLobby(socketData)
+		err = createLobby()
 		break
 	case models.Lobby.ClientActions.Join:
-		err = joinLobby(socketData)
+		err = joinLobby(&socketData.Message)
+		break
+	case models.Lobby.ClientActions.SetName:
+		err = setLobbyName(&socketData.Message)
+		break
+	case models.Lobby.ClientActions.Get:
+		err = getLobby(&socketData.Message)
 		break
 	}
 	if err != nil {
@@ -22,15 +31,33 @@ func lobbyHandler(socketData *SocketData) {
 	}
 }
 
-func createLobby(socketData *SocketData) error {
-	return services.Lobby.Create(&socketData.requestContext.ConnectionID, socketData.sessionId)
+func createLobby() error {
+	return services.Lobby.Create()
 }
 
-func joinLobby(socketData *SocketData) error {
+func joinLobby(message *models.Wrapper) error {
 	req := models.LobbyJoinRequest{}
-	err := req.Decode(&socketData.message)
+	err := req.Decode(message)
 	if err != nil {
 		return err
 	}
-	return services.Lobby.Join(req.LobbyId, &socketData.requestContext.ConnectionID, socketData.sessionId, false)
+	return services.Lobby.Join(req.LobbyId, false)
+}
+
+func setLobbyName(message *models.Wrapper) error {
+	req := models.LobbySetNameRequest{}
+	err := req.Decode(message)
+	if err != nil {
+		return err
+	}
+	return services.Lobby.NameChange(&req.Text, &req.LobbyId)
+}
+
+func getLobby(message *models.Wrapper) error {
+	req := models.LobbyGetRequest{}
+	err := req.Decode(message)
+	if err != nil {
+		return err
+	}
+	return services.Lobby.Get(&req.LobbyId)
 }
