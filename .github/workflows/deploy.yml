@@ -32,10 +32,10 @@ jobs:
           path: ./main
 
       - name: Zip Discconect
-        run: zip discconect.zip main
+        run: zip disconnect.zip main
 
       - name: Update Discconect
-        run: aws lambda update-function-code --function-name Disconnect --zip-file discconect.zip
+        run: aws lambda update-function-code --function-name Disconnect --zip-file fileb://disconnect.zip
 
       # - name: Download Connecy Assets
       #   uses: dawidd6/action-download-artifact@v2
