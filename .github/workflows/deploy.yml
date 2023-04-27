@@ -38,14 +38,16 @@ jobs:
           zip disconnect.zip main
 
       - name: Upload Disconnect
+        working-directory: ./build-disconnect
         uses: actions/upload-artifact@v1
         with:
           name: disconnect
-          path: build-disconnect/disconnect.zip
+          path: disconnect.zip
 
       - name: Update Discconect
+        working-directory: ./build-disconnect
         run: |
-          aws lambda update-function-code --function-name Disconnect --zip-file fileb://build-disconnect/disconnect.zip
+          aws lambda update-function-code --function-name Disconnect --zip-file fileb://disconnect.zip
 
       # - name: Download Connecy Assets
       #   uses: dawidd6/action-download-artifact@v2
