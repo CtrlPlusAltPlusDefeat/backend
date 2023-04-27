@@ -36,6 +36,13 @@ jobs:
         run: |
           mv disconnect main
           zip disconnect.zip main
+          
+      - name: Upload Disconnect
+        working-directory: ./build-disconnect
+        uses: actions/upload-artifact@v1
+        with:
+          name: disconnect
+          path: disconnect.zip
 
       - name: Upload Disconnect
         uses: actions/upload-artifact@v1
