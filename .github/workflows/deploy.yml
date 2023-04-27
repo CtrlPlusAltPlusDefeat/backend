@@ -29,31 +29,16 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{ github.event.pull_request.head.sha }}
-          path: ./main
+          path: ./build-disconnect
 
       - name: Zip Discconect
         run: |
-
-          echo First
-          ls
-
-          echo Second
-          stat main
-
-          echo Third
-          stat disconnect
-
-          echo Fourth
-          cd main
-
-          echo Fifth
-          ls
-
-          echo Sixth
-          zip disconnect.zip main
+          mv build-disconnect/disconnect build-disconnect/main
+          zip disconnect.zip build-disconnect/main
 
       - name: Update Discconect
-        run: aws lambda update-function-code --function-name Disconnect --zip-file fileb://disconnect.zip
+        run: |
+          aws lambda update-function-code --function-name Disconnect --zip-file fileb://disconnect.zip
 
       # - name: Download Connecy Assets
       #   uses: dawidd6/action-download-artifact@v2
