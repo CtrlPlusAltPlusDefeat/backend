@@ -2,6 +2,7 @@ package route
 
 import (
 	"backend/pkg/models"
+	"backend/pkg/models/chat"
 	"backend/pkg/services"
 	"log"
 )
@@ -9,7 +10,7 @@ import (
 func chatHandle(socketData *models.SocketData) {
 	log.Printf("chatHandle: %s", socketData.Message.Action)
 
-	chatMessageRequest := models.ChatMessageRequest{}
+	chatMessageRequest := chat.MessageRequest{}
 	err := chatMessageRequest.Decode(&socketData.Message)
 	if err != nil {
 		log.Println("Error decoding message", err)

@@ -2,7 +2,7 @@ package services
 
 import (
 	"backend/pkg/db"
-	"backend/pkg/models"
+	"backend/pkg/models/lobby"
 	"backend/pkg/ws"
 	"context"
 	"github.com/google/uuid"
@@ -36,30 +36,24 @@ func (s lobbyT) Join(lobbyId string, isAdmin bool) error {
 }
 
 func (s lobbyT) Get(lobbyId *string) error {
-	playersRes, err := db.LobbyPlayer.GetPlayers(lobbyId)
+	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
 	if err != nil {
 		return err
 	}
 
-	var thisPlayer models.LobbyPlayer
-	var allPlayers []models.LobbyPlayer
-	for _, p := range playersRes {
-		player := models.LobbyPlayer{
-			Id:      p.Id,
-			Name:    p.Name,
-			IsAdmin: p.IsAdmin,
-			Points:  p.Points,
-		}
+	var thisPlayer lobby.Player
+	for _, p := range players {
 		if p.SessionId == *SocketData.SessionId {
-			thisPlayer = player
+			thisPlayer = p
+			break
 		}
-		allPlayers = append(allPlayers, player)
 	}
 
-	res := models.LobbyGetResponse{Player: thisPlayer, Lobby: models.LobbyDetails{
-		Players: allPlayers,
+	res := lobby.GetResponse{Player: thisPlayer, Lobby: lobby.Details{
+		Players: players,
 		LobbyId: *lobbyId,
 	}}
+
 	bytes, err := res.Encode()
 	if err != nil {
 		return err
@@ -77,7 +71,7 @@ func (s lobbyT) NameChange(name *string, lobbyId *string) error {
 }
 
 func sendLobbyJoin(lobbyId *string) error {
-	res := models.LobbyJoinResponse{LobbyId: *lobbyId}
+	res := lobby.JoinResponse{LobbyId: *lobbyId}
 	bytes, err := res.Encode()
 	if err != nil {
 		return err
@@ -85,14 +79,9 @@ func sendLobbyJoin(lobbyId *string) error {
 	return ws.Send(context.TODO(), &SocketData.RequestContext.ConnectionID, bytes)
 }
 
-func onPlayerJoin(player *db.Player, lobbyId *string) error {
+func onPlayerJoin(player *lobby.Player, lobbyId *string) error {
 
-	response := models.LobbyPlayerJoinResponse{Player: models.LobbyPlayer{
-		Id:      player.Id,
-		Name:    player.Name,
-		IsAdmin: player.IsAdmin,
-		Points:  player.Points,
-	}}
+	response := lobby.PlayerJoinResponse{Player: *player}
 	bytes, err := response.Encode()
 	if err != nil {
 		log.Printf("onPlayerJoin error encoding response")
@@ -101,13 +90,8 @@ func onPlayerJoin(player *db.Player, lobbyId *string) error {
 	return sendToLobby(lobbyId, bytes)
 }
 
-func onPlayerNameChange(player *db.Player, lobbyId *string) error {
-	response := models.LobbyNameChangeResponse{Player: models.LobbyPlayer{
-		Id:      player.Id,
-		Name:    player.Name,
-		IsAdmin: player.IsAdmin,
-		Points:  player.Points,
-	}}
+func onPlayerNameChange(player *lobby.Player, lobbyId *string) error {
+	response := lobby.NameChangeResponse{Player: *player}
 	bytes, err := response.Encode()
 	if err != nil {
 		log.Printf("onPlayerNameChange error encoding response")

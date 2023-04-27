@@ -22,7 +22,7 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 		playerHandle(&models.SocketData{RequestContext: context, Message: message})
 	}
 
-	res, err := db.Connection.GetClient().Get(context.ConnectionID)
+	res, err := db.Connection.Get(context.ConnectionID)
 	if err != nil {
 		return
 	}

@@ -2,6 +2,7 @@ package route
 
 import (
 	"backend/pkg/models"
+	"backend/pkg/models/lobby"
 	"backend/pkg/services"
 	"log"
 )
@@ -13,16 +14,16 @@ func lobbyHandler(socketData *models.SocketData) {
 	//inject into services
 	services.SocketData = socketData
 	switch socketData.Message.Action {
-	case models.Lobby.ClientActions.Create:
+	case lobby.Action.Client.Create:
 		err = createLobby()
 		break
-	case models.Lobby.ClientActions.Join:
+	case lobby.Action.Client.Join:
 		err = joinLobby(&socketData.Message)
 		break
-	case models.Lobby.ClientActions.SetName:
+	case lobby.Action.Client.SetName:
 		err = setLobbyName(&socketData.Message)
 		break
-	case models.Lobby.ClientActions.Get:
+	case lobby.Action.Client.Get:
 		err = getLobby(&socketData.Message)
 		break
 	}
@@ -36,7 +37,7 @@ func createLobby() error {
 }
 
 func joinLobby(message *models.Wrapper) error {
-	req := models.LobbyJoinRequest{}
+	req := lobby.JoinRequest{}
 	err := req.Decode(message)
 	if err != nil {
 		return err
@@ -45,7 +46,7 @@ func joinLobby(message *models.Wrapper) error {
 }
 
 func setLobbyName(message *models.Wrapper) error {
-	req := models.LobbySetNameRequest{}
+	req := lobby.SetNameRequest{}
 	err := req.Decode(message)
 	if err != nil {
 		return err
@@ -54,7 +55,7 @@ func setLobbyName(message *models.Wrapper) error {
 }
 
 func getLobby(message *models.Wrapper) error {
-	req := models.LobbyGetRequest{}
+	req := lobby.GetRequest{}
 	err := req.Decode(message)
 	if err != nil {
 		return err

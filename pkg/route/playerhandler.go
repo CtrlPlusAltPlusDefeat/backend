@@ -2,6 +2,7 @@ package route
 
 import (
 	"backend/pkg/models"
+	"backend/pkg/models/player"
 	"backend/pkg/services"
 	"backend/pkg/ws"
 	"context"
@@ -13,10 +14,10 @@ func playerHandle(socketData *models.SocketData) {
 	log.Printf("playerHandle: %s", socketData.Message.Action)
 	var err error
 	switch socketData.Message.Action {
-	case models.Player.ClientActions.CreateSession:
+	case player.Action.Client.CreateSession:
 		err = createSession(socketData)
 		break
-	case models.Player.ClientActions.UseSession:
+	case player.Action.Client.UseSession:
 		err = useSession(socketData)
 		break
 	}
@@ -32,7 +33,7 @@ func createSession(socketData *models.SocketData) error {
 }
 
 func useSession(socketData *models.SocketData) error {
-	useSessionReq := models.SessionUseRequest{}
+	useSessionReq := player.SessionUseRequest{}
 	err := useSessionReq.Decode(&socketData.Message)
 	if err != nil {
 		return err

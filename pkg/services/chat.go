@@ -2,7 +2,7 @@ package services
 
 import (
 	"backend/pkg/db"
-	"backend/pkg/models"
+	"backend/pkg/models/chat"
 	"backend/pkg/ws"
 	"context"
 	"log"
@@ -13,13 +13,13 @@ type chatT struct {
 
 var Chat chatT
 
-func (chat chatT) BroadcastMessage(connectionId string, chatMessage models.ChatMessageRequest) error {
-	connections, err := db.Connection.GetClient().GetAll()
+func (c chatT) BroadcastMessage(connectionId string, chatMessage chat.MessageRequest) error {
+	connections, err := db.Connection.GetAll()
 	if err != nil {
 		return err
 	}
 
-	response, err := models.ChatMessageResponse{Text: connectionId, ConnectionId: chatMessage.Text}.Encode()
+	response, err := chat.MessageResponse{Text: connectionId, ConnectionId: chatMessage.Text}.Encode()
 	if err != nil {
 		return err
 	}

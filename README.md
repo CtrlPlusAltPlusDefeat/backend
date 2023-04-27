@@ -48,6 +48,9 @@ Use an existing session, this should check no other connections are using it as 
 
 ---
 
+# Lobby Service
+
+
 # Chat Service
 
 Sending chat messages using the websocket requires data in the following format

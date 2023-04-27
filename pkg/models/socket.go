@@ -7,3 +7,8 @@ type SocketData struct {
 	Message        Wrapper
 	SessionId      *string
 }
+
+type Connection struct {
+	ConnectionId string `dynamodbav:"ConnectionId"`
+	SessionId    string `dynamodbav:"SessionId"`
+}

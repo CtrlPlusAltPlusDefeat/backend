@@ -1,11 +1,14 @@
 package main
 
 import (
+	awshelpers "backend/pkg/aws-helpers"
+	"backend/pkg/db"
 	"backend/pkg/route"
 	"backend/pkg/ws"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"log"
@@ -17,6 +20,11 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin:     func(r *http.Request) bool { return true },
+}
+
+func init() {
+	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
+	db.DynamoDb = dbClient
 }
 
 func main() {

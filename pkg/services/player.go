@@ -2,7 +2,7 @@ package services
 
 import (
 	"backend/pkg/db"
-	"backend/pkg/models"
+	"backend/pkg/models/player"
 	"backend/pkg/ws"
 	"context"
 	"github.com/google/uuid"
@@ -20,7 +20,7 @@ func (Player playerT) CreateSession(connectionId string) error {
 
 func (Player playerT) SetSession(sessionId string, connectionId string) error {
 	log.Printf("SetSession for connection %s to %s", connectionId, sessionId)
-	connection, err := db.Connection.GetClient().Get(connectionId)
+	connection, err := db.Connection.Get(connectionId)
 	if err != nil {
 		return err
 	}
@@ -35,14 +35,14 @@ func (Player playerT) SetSession(sessionId string, connectionId string) error {
 	if connection.SessionId != sessionId {
 
 		connection.SessionId = sessionId
-		err = db.Connection.GetClient().Update(connectionId, db.ConnectionUpdate{SessionId: sessionId})
+		err = db.Connection.Update(connectionId, sessionId)
 		if err != nil {
 			return err
 		}
 	}
 
 	//create response
-	msg, err := models.SessionResponse{SessionId: sessionId}.Encode()
+	msg, err := player.SessionResponse{SessionId: sessionId}.Encode()
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (Player playerT) SetSession(sessionId string, connectionId string) error {
 }
 
 func DestroySession(sessionId string) error {
-	connections, err := db.Connection.GetClient().GetBySessionId(sessionId)
+	connections, err := db.Connection.GetBySessionId(sessionId)
 	if err != nil || len(connections) == 0 {
 		return err
 	}
