@@ -10,58 +10,30 @@ concurrency: deploy
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
+    strategy:
+      matrix:
+        function: [disconnect, connect, default]
     runs-on: ubuntu-latest
     environment: aws
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Download Disconnect Assets
+      - name: Download
         uses: dawidd6/action-download-artifact@v2
         with:
-          name: build-disconnect
+          name: ${{ matrix.function }}
           workflow: build.yml
           workflow_conclusion: success
           commit: ${{ github.event.pull_request.head.sha }}
-          path: ./build-disconnect
+          path: ./build
 
-      - name: Zip Discconect
-        working-directory: ./build-disconnect
+      - name: Update
         run: |
-          mv disconnect main
-          zip disconnect.zip main
-
-      - name: Upload Disconnect
-        uses: actions/upload-artifact@v1
-        with:
-          name: disconnect
-          path: build-disconnect/disconnect.zip
-
-      - name: Update Discconect
-        working-directory: ./build-disconnect
-        run: |
-          aws lambda update-function-code --function-name Disconnect --zip-file fileb://disconnect.zip
-
-      # - name: Download Connecy Assets
-      #   uses: dawidd6/action-download-artifact@v2
-      #   with:
-      #     name: build-connect
-      #     workflow: build.yml
-      #     workflow_conclusion: success
-      #     commit: ${{ github.event.pull_request.head.sha }}
-      #     path: ./build-connect
-
-      # - name: Download Default Assets
-      #   uses: dawidd6/action-download-artifact@v2
-      #   with:
-      #     name: build-default
-      #     workflow: build.yml
-      #     workflow_conclusion: success
-      #     commit: ${{ github.event.pull_request.head.sha }}
-      #     path: ./build-default
+          aws lambda update-function-code --function-name ${{ matrix.function }} --zip-file fileb://build/main.zip
