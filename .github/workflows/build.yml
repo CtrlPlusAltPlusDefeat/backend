@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        function: [disconnect, connect, default]
+        function: [ disconnect, connect, default ]
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository

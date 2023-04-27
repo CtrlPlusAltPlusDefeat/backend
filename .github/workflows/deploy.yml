@@ -12,7 +12,7 @@ jobs:
     if: github.event.pull_request.merged == true
     strategy:
       matrix:
-        function: [disconnect, connect, default]
+        function: [ disconnect, connect, default ]
     runs-on: ubuntu-latest
     environment: aws
     steps:
