@@ -3,6 +3,7 @@ package route
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/ws"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"log"
@@ -21,6 +22,9 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 	if message.Service == models.Service.Player {
 		playerHandle(&models.SocketData{RequestContext: context, Message: message})
 	}
+
+	//inject ConnectionId into context
+	ws.ConnectionID = &context.ConnectionID
 
 	res, err := db.Connection.Get(context.ConnectionID)
 	if err != nil {

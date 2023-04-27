@@ -13,6 +13,6 @@ func Disconnect(id *string) error {
 
 // handle disconnecting connections
 func deleteConnection(id *string) error {
-	log.Printf("Deleting connection Id: %s", id)
+	log.Printf("Deleting connection Id: %s", *id)
 	return db.Connection.Remove(id)
 }

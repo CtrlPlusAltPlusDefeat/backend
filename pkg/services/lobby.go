@@ -24,6 +24,8 @@ func (s lobbyT) Create() error {
 }
 
 func (s lobbyT) Join(lobbyId string, isAdmin bool) error {
+
+	// else add new lobby player
 	player, err := db.LobbyPlayer.Add(&lobbyId, SocketData.SessionId, &SocketData.RequestContext.ConnectionID, isAdmin)
 	if err != nil {
 		return err
@@ -36,6 +38,20 @@ func (s lobbyT) Join(lobbyId string, isAdmin bool) error {
 }
 
 func (s lobbyT) Get(lobbyId *string) error {
+	// check if connectionId has changed
+	player, err := db.LobbyPlayer.Get(lobbyId, SocketData.SessionId)
+	if err != nil {
+		return err
+	}
+
+	// if so, update connectionId
+	if player.ConnectionId == SocketData.RequestContext.ConnectionID {
+		player, err = db.LobbyPlayer.UpdateConnectionId(lobbyId, SocketData.SessionId, &SocketData.RequestContext.ConnectionID)
+		if err != nil {
+			return err
+		}
+	}
+
 	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
 	if err != nil {
 		return err
@@ -87,7 +103,8 @@ func onPlayerJoin(player *lobby.Player, lobbyId *string) error {
 		log.Printf("onPlayerJoin error encoding response")
 		return err
 	}
-	return sendToLobby(lobbyId, bytes)
+	//we don't need to notify this connection as we know we are in the lobby
+	return ws.SendToLobby(lobbyId, bytes, true)
 }
 
 func onPlayerNameChange(player *lobby.Player, lobbyId *string) error {
@@ -97,19 +114,5 @@ func onPlayerNameChange(player *lobby.Player, lobbyId *string) error {
 		log.Printf("onPlayerNameChange error encoding response")
 		return err
 	}
-	return sendToLobby(lobbyId, bytes)
-}
-
-func sendToLobby(lobbyId *string, msg []byte) error {
-	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
-	if err != nil {
-		return err
-	}
-	for _, p := range players {
-		err = ws.Send(context.TODO(), &p.ConnectionId, msg)
-		if err != nil {
-			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
-		}
-	}
-	return nil
+	return ws.SendToLobby(lobbyId, bytes, false)
 }

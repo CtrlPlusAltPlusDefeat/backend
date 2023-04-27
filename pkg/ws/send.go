@@ -2,6 +2,7 @@ package ws
 
 import (
 	"backend/pkg/aws-helpers"
+	"backend/pkg/db"
 	"context"
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
@@ -14,8 +15,28 @@ import (
 
 var LocalConnections = make(map[string]*websocket.Conn)
 
+// ConnectionID gets injected from router.go
+var ConnectionID *string
+
 func getClient() *apigatewaymanagementapi.Client {
 	return apigatewaymanagementapi.NewFromConfig(aws_helpers.GetConfig())
+}
+
+func SendToLobby(lobbyId *string, msg []byte, excludeConnection bool) error {
+	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
+	if err != nil {
+		return err
+	}
+	for _, p := range players {
+		if excludeConnection && p.ConnectionId == *ConnectionID {
+			continue
+		}
+		err = Send(context.TODO(), &p.ConnectionId, msg)
+		if err != nil {
+			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
+		}
+	}
+	return nil
 }
 
 // Send sends the provided data to the provided Amazon API Gateway connection ID. A common failure scenario which
@@ -23,7 +44,7 @@ func getClient() *apigatewaymanagementapi.Client {
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
 func Send(ctx context.Context, id *string, data []byte) error {
-	log.Printf("Send: %s", data)
+	log.Printf("Sending: %s", data)
 	// check env vars to see if its running locally if so we can pull connection from map and write
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")

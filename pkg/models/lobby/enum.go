@@ -31,6 +31,6 @@ var Action = lobbyAction{
 		PlayerJoined: "player-joined",
 		PlayerLeft:   "player-left",
 		NameChanged:  "name-change",
-		Get:          "Get",
+		Get:          "get",
 	},
 }

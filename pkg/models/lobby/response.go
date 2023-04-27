@@ -22,7 +22,7 @@ type GetResponse struct {
 
 func (res GetResponse) Encode() ([]byte, error) {
 	data, _ := json.Marshal(res)
-	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.Joined, Data: string(data)}
+	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.Get, Data: string(data)}
 	return json.Marshal(message)
 }
 
@@ -32,7 +32,7 @@ type PlayerJoinResponse struct {
 
 func (res PlayerJoinResponse) Encode() ([]byte, error) {
 	data, _ := json.Marshal(res)
-	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.Joined, Data: string(data)}
+	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.PlayerJoined, Data: string(data)}
 	return json.Marshal(message)
 }
 
@@ -42,7 +42,7 @@ type PlayerLeftResponse struct {
 
 func (res PlayerLeftResponse) Encode() ([]byte, error) {
 	data, _ := json.Marshal(res)
-	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.Joined, Data: string(data)}
+	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.PlayerLeft, Data: string(data)}
 	return json.Marshal(message)
 }
 
@@ -52,6 +52,6 @@ type NameChangeResponse struct {
 
 func (res NameChangeResponse) Encode() ([]byte, error) {
 	data, _ := json.Marshal(res)
-	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.Joined, Data: string(data)}
+	message := models.Wrapper{Service: models.Service.Lobby, Action: Action.Server.NameChanged, Data: string(data)}
 	return json.Marshal(message)
 }

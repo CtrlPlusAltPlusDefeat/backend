@@ -79,6 +79,55 @@ func (l *lobbyplayer) GetPlayers(lobbyId *string) ([]lobby.Player, error) {
 	return players, nil
 }
 
+func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (lobby.Player, error) {
+	var player lobby.Player
+
+	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{TableName: aws.String(l.table),
+		Key: map[string]types.AttributeValue{
+			"SessionId": &types.AttributeValueMemberS{Value: *sessionId},
+			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
+		},
+	})
+	if err != nil {
+		log.Printf("Couldn't query %s table. Here's why: %v\n", l.table, err)
+		return player, err
+	}
+	err = attributevalue.UnmarshalMap(item.Item, &player)
+	if err != nil {
+		log.Printf("Error unmarshalling lobby.Player: %s", err)
+	}
+	return player, nil
+}
+
+// UpdateConnectionId update a lobby players connectionId using the sessionId and lobbyId
+func (l *lobbyplayer) UpdateConnectionId(lobbyId *string, sessionId *string, connectionId *string) (lobby.Player, error) {
+	var player lobby.Player
+	item, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(l.table),
+		Key: map[string]types.AttributeValue{
+			"SessionId": &types.AttributeValueMemberS{Value: *sessionId},
+			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#ConnectionId": "ConnectionId",
+		},
+		UpdateExpression: aws.String("set #ConnectionId=:ConnectionId"),
+		ReturnValues:     types.ReturnValueAllNew,
+	})
+	if err != nil {
+		log.Printf("Couldn't update %s in %s table. Here's why: %v\n", *sessionId, l.table, err)
+		return player, err
+	}
+	err = attributevalue.UnmarshalMap(item.Attributes, &player)
+	if err != nil {
+		log.Printf("Error unmarshalling lobby.Player: %s", err)
+	}
+	return player, err
+}
+
 func (l *lobbyplayer) UpdateName(lobbyId *string, sessionId *string, name *string) (lobby.Player, error) {
 	var player lobby.Player
 

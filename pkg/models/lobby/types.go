@@ -1,9 +1,9 @@
 package lobby
 
 type Player struct {
-	LobbyId      string `dynamodbav:"LobbyId"`
-	SessionId    string `dynamodbav:"SessionId"`
-	ConnectionId string `dynamodbav:"ConnectionId"`
+	LobbyId      string `dynamodbav:"LobbyId" json:"-"`
+	SessionId    string `dynamodbav:"SessionId" json:"-"`
+	ConnectionId string `dynamodbav:"ConnectionId" json:"-"`
 	Id           string `dynamodbav:"Id" json:"id"`
 	Name         string `dynamodbav:"Name" json:"name"`
 	Points       int32  `dynamodbav:"Points" json:"points"`

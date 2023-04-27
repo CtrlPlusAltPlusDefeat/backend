@@ -6,7 +6,6 @@ import (
 	"backend/pkg/route"
 	"backend/pkg/ws"
 	"context"
-	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/google/uuid"
@@ -28,12 +27,6 @@ func init() {
 }
 
 func main() {
-	arguments := os.Args
-	if len(arguments) == 1 {
-		fmt.Println("Please provide a port number!")
-		return
-	}
-
 	// set environment variables
 	_ = os.Setenv("LOCAL_WEBSOCKET_SERVER", "1")
 	_ = os.Setenv("DYNAMO_DB_URL", "http://localhost:8000")
@@ -82,7 +75,7 @@ func handleConnection(conn *websocket.Conn) {
 		// print out that message for clarity
 		log.Println(string(p))
 
-		_, err = route.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+		_, _ = route.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
 			Body:           string(p),
 		})
