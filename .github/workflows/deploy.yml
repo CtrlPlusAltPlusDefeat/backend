@@ -51,6 +51,12 @@ jobs:
           name: disconnect
           path: disconnect.zip
 
+      - name: Upload Disconnect
+        uses: actions/upload-artifact@v1
+        with:
+          name: disconnect
+          path: build-disconnect/disconnect.zip
+
       - name: Update Discconect
         working-directory: ./build-disconnect
         run: |
