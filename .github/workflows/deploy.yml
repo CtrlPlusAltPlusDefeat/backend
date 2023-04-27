@@ -32,17 +32,20 @@ jobs:
           path: ./build-disconnect
 
       - name: Zip Discconect
+        working-directory: ./build-disconnect
         run: |
-          mv build-disconnect/disconnect build-disconnect/main
-          zip disconnect.zip build-disconnect/main
-
+          mv disconnect main
+          zip disconnect.zip main
+          
       - name: Upload Disconnect
+        working-directory: ./build-disconnect
         uses: actions/upload-artifact@v1
         with:
           name: disconnect
           path: disconnect.zip
 
       - name: Update Discconect
+        working-directory: ./build-disconnect
         run: |
           aws lambda update-function-code --function-name Disconnect --zip-file fileb://disconnect.zip
 
