@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    strategy:
+      matrix:
+        function: [ disconnect, connect, default ]
+    runs-on: ubuntu-latest
+    environment: aws
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: ${{ matrix.function }}
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{ github.event.pull_request.head.sha }}
+          path: ./build
+
+      - name: Update
+        run: |
+          aws lambda update-function-code --function-name ${{ matrix.function }} --zip-file fileb://build/main.zip
