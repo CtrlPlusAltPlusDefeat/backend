@@ -5,34 +5,35 @@ on:
   branches:
    - main
 
+env:
+  GOOS: linux
+  GOARCH: amd64
+
 jobs:
- build:
-  runs-on: ubuntu-latest
-  steps:
-   - name: Clone repository
-     uses: actions/checkout@v2
+  build:
+    strategy:
+      matrix:
+        function: [disconnect, connect, default]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
 
-   - uses: actions/setup-go@v4
-     with:
-        go-version: 1.15
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.15
 
-   - name: Build
-     run: ./scripts/compile-go.sh 
+      - name: Build
+        run: |
+          go build -o "./dist/${{ matrix.function }}/main" "./pkg/handlers/${{ matrix.function }}/${{ matrix.function }}.go"
 
-   - name: Upload Disconnect Build
-     uses: actions/upload-artifact@v1
-     with:
-      name: build-disconnect
-      path: dist/disconnect
+      - name: Zip
+        working-directory: ./dist/${{ matrix.function }}
+        run: |
+          zip main.zip main
 
-   - name: Upload Connect Build
-     uses: actions/upload-artifact@v1
-     with:
-      name: build-connect
-      path: dist/connect
-
-   - name: Upload Default Build
-     uses: actions/upload-artifact@v1
-     with:
-      name: build-default
-      path: dist/default
+      - name: Upload
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ matrix.function }}
+          path: dist/${{ matrix.function }}/main.zip
