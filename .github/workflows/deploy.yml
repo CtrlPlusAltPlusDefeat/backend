@@ -33,10 +33,23 @@ jobs:
 
       - name: Zip Discconect
         run: |
-          ls
-          cd main
+
+          echo First
           ls
 
+          echo Second
+          stat main
+
+          echo Third
+          stat disconnect
+
+          echo Fourth
+          cd main
+
+          echo Fifth
+          ls
+
+          echo Sixth
           zip disconnect.zip main
 
       - name: Update Discconect
