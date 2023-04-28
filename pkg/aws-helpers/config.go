@@ -5,20 +5,22 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-secretsmanager-caching-go/secretcache"
 	"os"
+)
+
+var (
+	 secretCache, _ = secretcache.New()
 )
 
 func GetConfig() aws.Config {
 	dbUrl := os.Getenv("DYNAMO_DB_URL")
+
 	if len(dbUrl) > 0 {
 		return getLocalConfig()
 	}
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		//we panic here because this is a fatal error, we cannot continue from this
-		panic(err)
-	}
-	return cfg
+
+	return getProductionConfig()
 }
 
 func getLocalConfig() aws.Config {
@@ -43,9 +45,29 @@ func getLocalConfig() aws.Config {
 			},
 		}),
 	)
+
 	if err != nil {
 		//we panic here because this is a fatal error, we cannot continue from this
 		panic(err)
 	}
+
+	return cfg
+}
+
+
+func getProductionConfig() aws.Config {
+	key, _ := secretCache.GetSecretString("BackendAccessKey")
+	secret, _ := secretCache.GetSecretString("BackendSecretAccessKey")
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion("eu-west-1"),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(key, secret, ""))
+	)
+
+	if err != nil {
+		//we panic here because this is a fatal error, we cannot continue from this
+		panic(err)
+	}
+	
 	return cfg
 }
