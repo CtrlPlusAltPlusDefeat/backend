@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-secretsmanager-caching-go/secretcache"
 	"os"
+	"log"
 )
 
 var (
