@@ -14,7 +14,7 @@ type (
 )
 
 var (
-	handlers map[string]Handler
+	handlers map[string]Handler = make(map[string]Handler)
 )
 
 func Configure() {
