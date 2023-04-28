@@ -20,7 +20,6 @@ var LocalConnections = make(map[string]*websocket.Conn)
 // ConnectionContext gets injected from router.go
 var ConnectionContext *events.APIGatewayWebsocketProxyRequestContext
 
-// APIGateway gets injected from router.go
 var APIGateway *apigatewaymanagementapi.Client
 
 func getClient() *apigatewaymanagementapi.Client {
