@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-secretsmanager-caching-go/secretcache"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"log"
 	"os"
 )
@@ -61,45 +61,61 @@ func getLocalConfig() aws.Config {
 func getProductionConfig() aws.Config {
 	log.Printf("GetConfig #5")
 
-	secretCache, err1 := secretcache.New()
+	defaultConfig, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-west-2"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("GetConfig #6")
-	if err1 != nil {
-		log.Printf(err1.Error())
-	}
 
-	key, err2 := secretCache.GetSecretString("BackendAccessKey")
+	svc := secretsmanager.NewFromConfig(defaultConfig)
 
 	log.Printf("GetConfig #7")
-	if err2 != nil {
-		log.Printf(err2.Error())
-	}
 
-	secret, err3 := secretCache.GetSecretString("BackendSecretAccessKey")
+	result, err := svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String("BackendAccessKey"),
+	})
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	log.Printf("GetConfig #8")
-	if err3 != nil {
-		log.Printf(err3.Error())
+
+	var key string = *result.SecretString
+
+	log.Printf("GetConfig #9")
+
+	result, err = svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String("BackendSecretAccessKey"),
+	})
+
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
+	log.Printf("GetConfig #10")
+
+	var secret string = *result.SecretString
+
+	log.Printf("GetConfig #11")
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion("eu-west-1"),
+		config.WithRegion("eu-west-2"),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(key, secret, "")),
 	)
 
-	log.Printf("GetConfig #9")
+	log.Printf("GetConfig #12")
+
 	if err != nil {
+		log.Printf("GetConfig #13")
 		log.Printf(err.Error())
-	}
 
-	if err != nil {
-		log.Printf("GetConfig #10")
-
-		//we panic here because this is a fatal error, we cannot continue from this
 		panic(err)
 	}
 
-	log.Printf("GetConfig #11")
+	log.Printf("GetConfig #14")
 
 	return cfg
 }
