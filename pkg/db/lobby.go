@@ -14,10 +14,10 @@ type lobbydb struct {
 
 var Lobby = lobbydb{table: "Lobby"}
 
-func (l *lobbydb) Add(lobbyId string) error {
+func (l *lobbydb) Add(lobbyId *string) error {
 	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(l.table), Item: map[string]types.AttributeValue{
-			"LobbyId": &types.AttributeValueMemberS{Value: lobbyId},
+			"LobbyId": &types.AttributeValueMemberS{Value: *lobbyId},
 		}})
 	if err != nil {
 		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobbyId, l.table, err)

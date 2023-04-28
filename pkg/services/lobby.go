@@ -2,64 +2,67 @@ package services
 
 import (
 	"backend/pkg/db"
+	"backend/pkg/models"
 	"backend/pkg/models/lobby"
 	"backend/pkg/ws"
-	"context"
 	"github.com/google/uuid"
 	"log"
 )
 
-type lobbyT struct {
+func Create(context *models.Context) error {
+	id := uuid.New().String()
+
+	context = context.ForSession(&id)
+
+	err := db.Lobby.Add(context.LobbyId())
+
+	if err != nil {
+		return err
+	}
+
+	return Join(context, true)
 }
 
-var Lobby lobbyT
+func Join(context *models.Context, isAdmin bool) error {
+	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
 
-func (s lobbyT) Create() error {
-	lobbyId := uuid.New().String()
-	err := db.Lobby.Add(lobbyId)
 	if err != nil {
 		return err
 	}
-	return s.Join(lobbyId, true)
+
+	err = onPlayerJoin(context, &player)
+
+	if err != nil {
+		return err
+	}
+
+	return sendLobbyJoin(context)
 }
 
-func (s lobbyT) Join(lobbyId string, isAdmin bool) error {
+func Get(context *models.Context) error {
+	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 
-	// else add new lobby player
-	player, err := db.LobbyPlayer.Add(&lobbyId, SocketData.SessionId, &SocketData.RequestContext.ConnectionID, isAdmin)
-	if err != nil {
-		return err
-	}
-	err = onPlayerJoin(&player, &lobbyId)
-	if err != nil {
-		return err
-	}
-	return sendLobbyJoin(&lobbyId)
-}
-
-func (s lobbyT) Get(lobbyId *string) error {
-	// check if connectionId has changed
-	player, err := db.LobbyPlayer.Get(lobbyId, SocketData.SessionId)
 	if err != nil {
 		return err
 	}
 
-	// if so, update connectionId
-	if player.ConnectionId == SocketData.RequestContext.ConnectionID {
-		player, err = db.LobbyPlayer.UpdateConnectionId(lobbyId, SocketData.SessionId, &SocketData.RequestContext.ConnectionID)
+	if player.ConnectionId == *context.ConnectionId() {
+		player, err = db.LobbyPlayer.UpdateConnectionId(context.LobbyId(), context.SessionId(), context.ConnectionId())
+
 		if err != nil {
 			return err
 		}
 	}
 
-	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
+	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
+
 	if err != nil {
 		return err
 	}
 
 	var thisPlayer lobby.Player
 	for _, p := range players {
-		if p.SessionId == *SocketData.SessionId {
+		if p.SessionId == *context.SessionId() {
 			thisPlayer = p
 			break
 		}
@@ -67,52 +70,59 @@ func (s lobbyT) Get(lobbyId *string) error {
 
 	res := lobby.GetResponse{Player: thisPlayer, Lobby: lobby.Details{
 		Players: players,
-		LobbyId: *lobbyId,
+		LobbyId: *context.LobbyId(),
 	}}
 
 	bytes, err := res.Encode()
+
 	if err != nil {
 		return err
 	}
 
-	return ws.Send(context.TODO(), &SocketData.RequestContext.ConnectionID, bytes)
+	return ws.Send(context, bytes)
 }
 
-func (s lobbyT) NameChange(name *string, lobbyId *string) error {
-	player, err := db.LobbyPlayer.UpdateName(lobbyId, SocketData.SessionId, name)
+func NameChange(context *models.Context, name *string) error {
+	player, err := db.LobbyPlayer.UpdateName(context.LobbyId(), context.SessionId(), name)
+
 	if err != nil {
 		return err
 	}
-	return onPlayerNameChange(&player, lobbyId)
+
+	return onPlayerNameChange(context, &player)
 }
 
-func sendLobbyJoin(lobbyId *string) error {
-	res := lobby.JoinResponse{LobbyId: *lobbyId}
+func sendLobbyJoin(context *models.Context) error {
+	res := lobby.JoinResponse{LobbyId: *context.LobbyId()}
 	bytes, err := res.Encode()
+
 	if err != nil {
 		return err
 	}
-	return ws.Send(context.TODO(), &SocketData.RequestContext.ConnectionID, bytes)
+
+	return ws.Send(context, bytes)
 }
 
-func onPlayerJoin(player *lobby.Player, lobbyId *string) error {
-
+func onPlayerJoin(context *models.Context, player *lobby.Player) error {
 	response := lobby.PlayerJoinResponse{Player: *player}
 	bytes, err := response.Encode()
+
 	if err != nil {
 		log.Printf("onPlayerJoin error encoding response")
 		return err
 	}
-	//we don't need to notify this connection as we know we are in the lobby
-	return ws.SendToLobby(lobbyId, bytes, true)
+
+	return ws.SendToLobby(context, bytes, true)
 }
 
-func onPlayerNameChange(player *lobby.Player, lobbyId *string) error {
+func onPlayerNameChange(context *models.Context, player *lobby.Player) error {
 	response := lobby.NameChangeResponse{Player: *player}
 	bytes, err := response.Encode()
+
 	if err != nil {
 		log.Printf("onPlayerNameChange error encoding response")
 		return err
 	}
-	return ws.SendToLobby(lobbyId, bytes, false)
+
+	return ws.SendToLobby(context, bytes, false)
 }

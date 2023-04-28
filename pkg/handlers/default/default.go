@@ -1,11 +1,9 @@
 package main
 
 import (
-	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
 	"backend/pkg/route"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
 /*
@@ -14,9 +12,8 @@ init is called when lambda starts up,
 spin up a dynamodb client and inject into db package
 */
 func init() {
-	config := awshelpers.GetConfig()
-	dbClient := dynamodb.NewFromConfig(config)
-	db.DynamoDb = dbClient
+	db.Configure()
+	route.Configure()
 }
 
 func main() {

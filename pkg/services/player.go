@@ -2,61 +2,67 @@ package services
 
 import (
 	"backend/pkg/db"
+	"backend/pkg/models"
 	"backend/pkg/models/player"
 	"backend/pkg/ws"
-	"context"
 	"github.com/google/uuid"
 	"log"
 )
 
-type playerT struct {
+func CreateSession(context *models.Context) error {
+	id := uuid.New().String()
+
+	return SetSession(context.ForSession(&id))
 }
 
-var Player playerT
+func SetSession(context *models.Context) error {
+	log.Printf("SetSession for connection %s to %s", *context.ConnectionId(), *context.SessionId())
 
-func (Player playerT) CreateSession(connectionId string) error {
-	return Player.SetSession(uuid.New().String(), connectionId)
-}
+	connection, err := db.Connection.Get(context.ConnectionId())
 
-func (Player playerT) SetSession(sessionId string, connectionId string) error {
-	log.Printf("SetSession for connection %s to %s", connectionId, sessionId)
-	connection, err := db.Connection.Get(connectionId)
 	if err != nil {
 		return err
 	}
 
 	// Delete all sessions using this sessionId
-	err = DestroySession(sessionId)
+	err = DestroySession(context)
+
 	if err != nil {
 		return err
 	}
 
 	//check if we need to update the session
-	if connection.SessionId != sessionId {
+	if connection.SessionId != *context.SessionId() {
 
-		connection.SessionId = sessionId
-		err = db.Connection.Update(connectionId, sessionId)
+		err = db.Connection.Update(context.ConnectionId(), context.SessionId())
+
 		if err != nil {
 			return err
 		}
 	}
 
 	//create response
-	msg, err := player.SessionResponse{SessionId: sessionId}.Encode()
+	msg, err := player.SessionResponse{SessionId: *context.SessionId()}.Encode()
+
 	if err != nil {
 		return err
 	}
-	return ws.Send(context.TODO(), &connectionId, msg)
+
+	return ws.Send(context, msg)
 }
 
-func DestroySession(sessionId string) error {
-	connections, err := db.Connection.GetBySessionId(sessionId)
+func DestroySession(context *models.Context) error {
+	connections, err := db.Connection.GetBySessionId(context.SessionId())
+
 	if err != nil || len(connections) == 0 {
 		return err
 	}
+
 	log.Printf("Destroying %d sessions", len(connections))
+
 	for _, connection := range connections {
 		_ = ws.Disconnect(&connection.ConnectionId)
 	}
+
 	return nil
 }

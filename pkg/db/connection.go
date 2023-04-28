@@ -62,11 +62,11 @@ func (conn connection) GetAll() ([]models.Connection, error) {
 	return connections, nil
 }
 
-func (conn connection) Get(connectionId string) (models.Connection, error) {
+func (conn connection) Get(connectionId *string) (models.Connection, error) {
 	var connectionItem models.Connection
 	res, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(conn.table), Key: map[string]types.AttributeValue{
-			"ConnectionId": &types.AttributeValueMemberS{Value: connectionId},
+			"ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
 		},
 	})
 	if err != nil {
@@ -80,7 +80,7 @@ func (conn connection) Get(connectionId string) (models.Connection, error) {
 	return connectionItem, err
 }
 
-func (conn connection) GetBySessionId(sessionId string) ([]models.Connection, error) {
+func (conn connection) GetBySessionId(sessionId *string) ([]models.Connection, error) {
 	var connections []models.Connection
 
 	output, err := DynamoDb.Query(context.TODO(), &dynamodb.QueryInput{
@@ -91,7 +91,7 @@ func (conn connection) GetBySessionId(sessionId string) ([]models.Connection, er
 			"#sessionId": "SessionId",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":v_sessionId": &types.AttributeValueMemberS{Value: sessionId},
+			":v_sessionId": &types.AttributeValueMemberS{Value: *sessionId},
 		}})
 
 	if err != nil {
@@ -114,15 +114,15 @@ func (conn connection) GetBySessionId(sessionId string) ([]models.Connection, er
 	return connections, err
 }
 
-func (conn connection) Update(connectionId string, sessionId string) error {
+func (conn connection) Update(connectionId *string, sessionId *string) error {
 
 	_, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(conn.table),
 		Key: map[string]types.AttributeValue{
-			"ConnectionId": &types.AttributeValueMemberS{Value: connectionId},
+			"ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":SessionId": &types.AttributeValueMemberS{Value: sessionId},
+			":SessionId": &types.AttributeValueMemberS{Value: *sessionId},
 		},
 		UpdateExpression: aws.String("set SessionId = :SessionId"),
 		ReturnValues:     types.ReturnValueUpdatedNew,

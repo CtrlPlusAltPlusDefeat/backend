@@ -3,9 +3,8 @@ package ws
 import (
 	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
-	"context"
+	"backend/pkg/models"
 	"errors"
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi/types"
 	"github.com/aws/smithy-go"
@@ -17,40 +16,32 @@ import (
 
 var LocalConnections = make(map[string]*websocket.Conn)
 
-// ConnectionContext gets injected from router.go
-var ConnectionContext *events.APIGatewayWebsocketProxyRequestContext
-
-var APIGateway *apigatewaymanagementapi.Client
-
-func getClient() *apigatewaymanagementapi.Client {
-	if APIGateway != nil {
-		return APIGateway
-	}
-	// Extract the request information:
-	// This should be the same for all connections since they will all be to the same FrontEnd endpoint.
+func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 	callbackURL := url.URL{
 		Scheme: "https",
-		Host:   ConnectionContext.DomainName,
-		Path:   ConnectionContext.Stage,
+		Host:   *context.ConnectionHost(),
+		Path:   *context.ConnectionPath(),
 	}
 
 	log.Println("Creating API Gateway client for callback URL: ", callbackURL.String())
-	APIGateway = apigatewaymanagementapi.NewFromConfig(awshelpers.GetConfig(), func(o *apigatewaymanagementapi.Options) {
+
+	return apigatewaymanagementapi.NewFromConfig(awshelpers.GetConfig(), func(o *apigatewaymanagementapi.Options) {
 		o.EndpointResolver = apigatewaymanagementapi.EndpointResolverFromURL(callbackURL.String())
 	})
-	return APIGateway
 }
 
-func SendToLobby(lobbyId *string, msg []byte, excludeConnection bool) error {
-	players, err := db.LobbyPlayer.GetPlayers(lobbyId)
+func SendToLobby(context *models.Context, msg []byte, excludeConnection bool) error {
+	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 	if err != nil {
 		return err
 	}
 	for _, p := range players {
-		if excludeConnection && p.ConnectionId == ConnectionContext.ConnectionID {
+		if excludeConnection && p.ConnectionId == *context.ConnectionId() {
 			continue
 		}
-		err = Send(context.TODO(), &p.ConnectionId, msg)
+
+		err = Send(context.ForConnection(&p.ConnectionId), msg)
+
 		if err != nil {
 			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
 		}
@@ -62,21 +53,21 @@ func SendToLobby(lobbyId *string, msg []byte, excludeConnection bool) error {
 // results in an error is if the connection ID is no longer valid. This can occur when a client disconnected from the
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
-func Send(ctx context.Context, id *string, data []byte) error {
+func Send(context *models.Context, data []byte) error {
 	log.Printf("Sending: %s", data)
 	// check env vars to see if its running locally if so we can pull connection from map and write
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
 	if local == "1" {
-		return writeMessage(id, data)
+		return writeMessage(context.ConnectionId(), data)
 	}
 
 	//use apigateway when not local
-	_, err := getClient().PostToConnection(ctx, &apigatewaymanagementapi.PostToConnectionInput{
+	_, err := getClient(context).PostToConnection(context.Value(), &apigatewaymanagementapi.PostToConnectionInput{
 		Data:         data,
-		ConnectionId: id,
+		ConnectionId: context.ConnectionId(),
 	})
-	return handleError(err, id)
+	return handleError(err, context.ConnectionId())
 }
 
 // writeMessage this is only used when running locally
