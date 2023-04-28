@@ -20,7 +20,7 @@ var (
 func Configure() {
 	add("player|create-session", CreateSession, communicateMiddleware)
 	add("player|use-session", UseSession, communicateMiddleware)
-	add("chat|", SendChat, sessionMiddleware)
+	add("chat|send", SendChat, sessionMiddleware)
 	add("lobby|create", CreateLobby, sessionMiddleware)
 	add("lobby|join", JoinLobby, sessionMiddleware)
 	add("lobby|set-name", SetLobbyName, sessionMiddleware)
