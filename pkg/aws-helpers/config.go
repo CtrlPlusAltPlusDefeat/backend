@@ -26,6 +26,7 @@ func GetConfig() aws.Config {
 	}
 
 	log.Printf("GetConfig #3 - Prod")
+  
 	return getProductionConfig()
 }
 
@@ -60,11 +61,13 @@ func getLocalConfig() aws.Config {
 	return cfg
 }
 
-
 func getProductionConfig() aws.Config {
 	log.Printf("GetConfig #5")
+  
 	key, _ := secretCache.GetSecretString("BackendAccessKey")
+  
 	log.Printf("GetConfig #6")
+  
 	secret, _ := secretCache.GetSecretString("BackendSecretAccessKey")
 
 	log.Printf("GetConfig #7")
@@ -77,12 +80,13 @@ func getProductionConfig() aws.Config {
 	log.Printf("GetConfig #8")
 
 	if err != nil {
-
 		log.Printf("GetConfig #9")
+    
 		//we panic here because this is a fatal error, we cannot continue from this
 		panic(err)
 	}
 	
 	log.Printf("GetConfig #10")
+  
 	return cfg
 }
