@@ -19,7 +19,7 @@ func (c chatT) BroadcastMessage(connectionId string, chatMessage chat.MessageReq
 		return err
 	}
 
-	response, err := chat.MessageResponse{Text: connectionId, ConnectionId: chatMessage.Text}.Encode()
+	response, err := chat.MessageResponse{Text: chatMessage.Text, ConnectionId: connectionId}.Encode()
 	if err != nil {
 		return err
 	}
@@ -27,10 +27,6 @@ func (c chatT) BroadcastMessage(connectionId string, chatMessage chat.MessageReq
 	log.Println("Sending ", chatMessage.Text, " to ", len(connections), " connections")
 
 	for index, con := range connections {
-		if con.ConnectionId == connectionId {
-			continue
-		}
-
 		log.Println("Sending ", chatMessage.Text, " to connection ", index)
 
 		sendChat(con.ConnectionId, response)
