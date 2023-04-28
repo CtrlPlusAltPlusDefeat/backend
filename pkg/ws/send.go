@@ -1,25 +1,44 @@
 package ws
 
 import (
-	"backend/pkg/aws-helpers"
+	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
 	"context"
 	"errors"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi/types"
 	"github.com/aws/smithy-go"
 	"github.com/gorilla/websocket"
 	"log"
+	"net/url"
 	"os"
 )
 
 var LocalConnections = make(map[string]*websocket.Conn)
 
-// ConnectionID gets injected from router.go
-var ConnectionID *string
+// ConnectionContext gets injected from router.go
+var ConnectionContext *events.APIGatewayWebsocketProxyRequestContext
+
+var APIGateway *apigatewaymanagementapi.Client
 
 func getClient() *apigatewaymanagementapi.Client {
-	return apigatewaymanagementapi.NewFromConfig(aws_helpers.GetConfig())
+	if APIGateway != nil {
+		return APIGateway
+	}
+	// Extract the request information:
+	// This should be the same for all connections since they will all be to the same FrontEnd endpoint.
+	callbackURL := url.URL{
+		Scheme: "https",
+		Host:   ConnectionContext.DomainName,
+		Path:   ConnectionContext.Stage,
+	}
+
+	log.Println("Creating API Gateway client for callback URL: ", callbackURL.String())
+	APIGateway = apigatewaymanagementapi.NewFromConfig(awshelpers.GetConfig(), func(o *apigatewaymanagementapi.Options) {
+		o.EndpointResolver = apigatewaymanagementapi.EndpointResolverFromURL(callbackURL.String())
+	})
+	return APIGateway
 }
 
 func SendToLobby(lobbyId *string, msg []byte, excludeConnection bool) error {
@@ -28,7 +47,7 @@ func SendToLobby(lobbyId *string, msg []byte, excludeConnection bool) error {
 		return err
 	}
 	for _, p := range players {
-		if excludeConnection && p.ConnectionId == *ConnectionID {
+		if excludeConnection && p.ConnectionId == ConnectionContext.ConnectionID {
 			continue
 		}
 		err = Send(context.TODO(), &p.ConnectionId, msg)

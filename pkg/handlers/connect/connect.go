@@ -14,7 +14,8 @@ init is called when lambda starts up,
 spin up a dynamodb client and inject into db package
 */
 func init() {
-	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
+	config := awshelpers.GetConfig()
+	dbClient := dynamodb.NewFromConfig(config)
 	db.DynamoDb = dbClient
 }
 
