@@ -2,24 +2,19 @@ package services
 
 import (
 	"backend/pkg/db"
+	"backend/pkg/models"
 	"backend/pkg/models/chat"
 	"backend/pkg/ws"
-	"context"
 	"log"
 )
 
-type chatT struct {
-}
-
-var Chat chatT
-
-func (c chatT) BroadcastMessage(connectionId string, chatMessage chat.MessageRequest) error {
+func BroadcastMessage(context *models.Context, chatMessage chat.MessageRequest) error {
 	connections, err := db.Connection.GetAll()
 	if err != nil {
 		return err
 	}
 
-	response, err := chat.MessageResponse{Text: chatMessage.Text, ConnectionId: connectionId}.Encode()
+	response, err := chat.MessageResponse{Text: chatMessage.Text, ConnectionId: *context.Connection.Id}.Encode()
 	if err != nil {
 		return err
 	}
@@ -29,15 +24,17 @@ func (c chatT) BroadcastMessage(connectionId string, chatMessage chat.MessageReq
 	for index, con := range connections {
 		log.Println("Sending ", chatMessage.Text, " to connection ", index)
 
-		sendChat(con.ConnectionId, response)
+		connectionContext := context.ForConnection(&con.ConnectionId)
+
+		sendChat(&connectionContext, response)
 	}
 	return nil
 }
 
-func sendChat(connectionId string, message []byte) {
-	err := ws.Send(context.TODO(), &connectionId, message)
+func sendChat(context *models.Context, message []byte) {
+	err := ws.Send(context, message)
+
 	if err != nil {
-		//we got an error when sending to a client
 		log.Printf("Error sending: %s", err)
 	}
 }

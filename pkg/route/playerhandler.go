@@ -5,43 +5,50 @@ import (
 	"backend/pkg/models/player"
 	"backend/pkg/services"
 	"backend/pkg/ws"
-	"context"
 	"github.com/google/uuid"
 	"log"
 )
 
-func playerHandle(socketData *models.SocketData) {
-	log.Printf("playerHandle: %s", socketData.Message.Action)
+func playerHandle(context *models.Context, data *models.Data) {
+	log.Printf("playerHandle: %s", data.Message.Action)
+
 	var err error
-	switch socketData.Message.Action {
+
+	switch data.Message.Action {
 	case player.Action.Client.CreateSession:
-		err = createSession(socketData)
+		err = createSession(context)
 		break
 	case player.Action.Client.UseSession:
-		err = useSession(socketData)
+		err = useSession(context, data)
 		break
 	}
+
 	if err != nil {
-		errorRes, err := models.ErrorResponse{Error: "Something went wrong handling this"}.UseWrapper(socketData.Message)
-		err = ws.Send(context.TODO(), &socketData.RequestContext.ConnectionID, errorRes)
+		errorRes, err := models.ErrorResponse{Error: "Something went wrong handling this"}.UseWrapper(data.Message)
+		err = ws.Send(context, errorRes)
 		log.Print(err)
 	}
 }
 
-func createSession(socketData *models.SocketData) error {
-	return services.Player.CreateSession(socketData.RequestContext.ConnectionID)
+func createSession(context *models.Context) error {
+	return services.CreateSession(context)
 }
 
-func useSession(socketData *models.SocketData) error {
+func useSession(context *models.Context, data *models.Data) error {
 	useSessionReq := player.SessionUseRequest{}
-	err := useSessionReq.Decode(&socketData.Message)
-	if err != nil {
-		return err
-	}
-	_, err = uuid.Parse(useSessionReq.SessionId)
-	if err != nil {
-		return err
-	}
-	return services.Player.SetSession(useSessionReq.SessionId, socketData.RequestContext.ConnectionID)
+	err := useSessionReq.Decode(&data.Message)
 
+	if err != nil {
+		return err
+	}
+
+	_, err = uuid.Parse(useSessionReq.SessionId)
+
+	if err != nil {
+		return err
+	}
+
+	context.SessionId = &useSessionReq.SessionId
+
+	return services.SetSession(context)
 }

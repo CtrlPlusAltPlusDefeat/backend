@@ -7,58 +7,70 @@ import (
 	"log"
 )
 
-func lobbyHandler(socketData *models.SocketData) {
-	log.Printf("lobbyHandler: %s", socketData.Message.Action)
+func lobbyHandler(context *models.Context, data *models.Data) {
+	log.Printf("lobbyHandler: %s", data.Message.Action)
 
 	var err error
-	//inject into services
-	services.SocketData = socketData
-	switch socketData.Message.Action {
+
+	switch data.Message.Action {
 	case lobby.Action.Client.Create:
-		err = createLobby()
+		err = createLobby(context)
 		break
 	case lobby.Action.Client.Join:
-		err = joinLobby(&socketData.Message)
+		err = joinLobby(context, &data.Message)
 		break
 	case lobby.Action.Client.SetName:
-		err = setLobbyName(&socketData.Message)
+		err = setLobbyName(context, &data.Message)
 		break
 	case lobby.Action.Client.Get:
-		err = getLobby(&socketData.Message)
+		err = getLobby(context, &data.Message)
 		break
 	}
+
 	if err != nil {
 		log.Printf("Error handling lobby request %s", err)
 	}
 }
 
-func createLobby() error {
-	return services.Lobby.Create()
+func createLobby(context *models.Context) error {
+	return services.Create(context)
 }
 
-func joinLobby(message *models.Wrapper) error {
+func joinLobby(context *models.Context, message *models.Wrapper) error {
 	req := lobby.JoinRequest{}
 	err := req.Decode(message)
+
 	if err != nil {
 		return err
 	}
-	return services.Lobby.Join(req.LobbyId, false)
+
+	context.LobbyId = &req.LobbyId
+
+	return services.Join(context, false)
 }
 
-func setLobbyName(message *models.Wrapper) error {
+func setLobbyName(context *models.Context, message *models.Wrapper) error {
 	req := lobby.SetNameRequest{}
 	err := req.Decode(message)
+
 	if err != nil {
 		return err
 	}
-	return services.Lobby.NameChange(&req.Text, &req.LobbyId)
+
+	context.LobbyId = &req.LobbyId
+
+	return services.NameChange(context, &req.Text)
 }
 
-func getLobby(message *models.Wrapper) error {
+func getLobby(context *models.Context, message *models.Wrapper) error {
 	req := lobby.GetRequest{}
 	err := req.Decode(message)
+
 	if err != nil {
 		return err
 	}
-	return services.Lobby.Get(&req.LobbyId)
+
+	context.LobbyId = &req.LobbyId
+
+	return services.Get(context)
 }

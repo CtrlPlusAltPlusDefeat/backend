@@ -3,41 +3,31 @@ package route
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
-	"backend/pkg/ws"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"log"
 )
 
-func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) {
-	var message models.Wrapper
-	err := message.Decode([]byte(body))
+func Route(context *models.Context, data *models.Data) {
 
-	if err != nil {
-		log.Println("Error decoding message", err)
-		return
-	}
-	log.Println("Route ", message.Service)
+	log.Println("Route ", data.Message.Service)
 
-	if message.Service == models.Service.Player {
-		playerHandle(&models.SocketData{RequestContext: context, Message: message})
+	if data.Message.Service == models.Service.Player {
+		playerHandle(context, data)
 	}
 
-	//inject ConnectionContext into context
-	ws.ConnectionContext = context
+	res, err := db.Connection.Get(context.Connection.Id)
 
-	res, err := db.Connection.Get(context.ConnectionID)
 	if err != nil {
 		return
 	}
-	routeMessage := models.SocketData{RequestContext: context, Message: message, SessionId: aws.String(res.SessionId)}
-	switch message.Service {
+
+	context.SessionId = &res.SessionId
+
+	switch data.Message.Service {
 	case models.Service.Chat:
-		chatHandle(&routeMessage)
+		chatHandle(context, data)
 		break
 	case models.Service.Lobby:
-		lobbyHandler(&routeMessage)
+		lobbyHandler(context, data)
 		break
 	}
-
 }

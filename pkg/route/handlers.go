@@ -6,6 +6,7 @@ package route
 
 import (
 	apigateway "backend/pkg/aws-helpers/api-gateway"
+	"backend/pkg/models"
 	"backend/pkg/ws"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
@@ -17,6 +18,7 @@ func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 	log.Printf("ConnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
 	err := ws.Connect(req.RequestContext.ConnectionID)
+
 	if err != nil {
 		return apigateway.Response{}, err
 	}
@@ -29,6 +31,7 @@ func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRe
 	log.Printf("DisconnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
 	err := ws.Disconnect(&req.RequestContext.ConnectionID)
+
 	if err != nil {
 		return apigateway.Response{}, err
 	}
@@ -37,10 +40,31 @@ func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRe
 }
 
 // DefaultHandler this is where all normal requests will come in
-func DefaultHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
+func DefaultHandler(context context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	log.Printf("DefaultHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 	log.Printf("msg %s", req.Body)
 
-	Route(&req.RequestContext, req.Body)
+	var message models.Wrapper
+	err := message.Decode([]byte(req.Body))
+
+	if err != nil {
+		return apigateway.Response{}, err
+	}
+
+	data := models.Data{
+		Message: message,
+	}
+
+	con := models.Context{
+		Connection: &models.ConnectionContext{
+			Id:   &req.RequestContext.ConnectionID,
+			Host: &req.RequestContext.DomainName,
+			Path: &req.RequestContext.Stage,
+		},
+		Value: context,
+	}
+
+	Route(&con, &data)
+
 	return apigateway.OkResponse(), nil
 }

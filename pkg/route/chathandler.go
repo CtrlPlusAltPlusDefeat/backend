@@ -7,16 +7,19 @@ import (
 	"log"
 )
 
-func chatHandle(socketData *models.SocketData) {
-	log.Printf("chatHandle: %s", socketData.Message.Action)
+func chatHandle(context *models.Context, data *models.Data) {
+	log.Printf("chatHandle: %s", data.Message.Action)
 
-	chatMessageRequest := chat.MessageRequest{}
-	err := chatMessageRequest.Decode(&socketData.Message)
+	message := chat.MessageRequest{}
+	err := message.Decode(&data.Message)
+
 	if err != nil {
 		log.Println("Error decoding message", err)
 		return
 	}
-	err = services.Chat.BroadcastMessage(socketData.RequestContext.ConnectionID, chatMessageRequest)
+
+	err = services.BroadcastMessage(context, message)
+
 	if err != nil {
 		log.Println("Error when attempting to send chat", err)
 	}
