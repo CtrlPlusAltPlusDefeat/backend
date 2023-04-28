@@ -61,7 +61,7 @@ func getProductionConfig() aws.Config {
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("eu-west-1"),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(key, secret, ""))
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(key, secret, "")),
 	)
 
 	if err != nil {
