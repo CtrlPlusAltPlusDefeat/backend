@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-secretsmanager-caching-go/secretcache"
 	"os"
 	"log"
-	"fmt"
 )
 
 func GetConfig() aws.Config {
