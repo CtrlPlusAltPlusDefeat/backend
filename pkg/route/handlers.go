@@ -28,7 +28,7 @@ func ConnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyReque
 func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	log.Printf("DisconnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
-	err := ws.Disconnect(req.RequestContext.ConnectionID)
+	err := ws.Disconnect(&req.RequestContext.ConnectionID)
 	if err != nil {
 		return apigateway.Response{}, err
 	}
@@ -39,6 +39,7 @@ func DisconnectHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRe
 // DefaultHandler this is where all normal requests will come in
 func DefaultHandler(_ context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	log.Printf("DefaultHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
+	log.Printf("msg %s", req.Body)
 
 	Route(&req.RequestContext, req.Body)
 	return apigateway.OkResponse(), nil
