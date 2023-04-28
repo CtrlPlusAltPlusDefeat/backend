@@ -58,22 +58,22 @@ func getProductionConfig() aws.Config {
 
 	svc := secretsmanager.NewFromConfig(defaultConfig)
 
-	result, err := svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
+	keyResult, err := svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String("BackendAccessKey"),
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	result, err = svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
+	secretResult, err := svc.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String("BackendSecretAccessKey"),
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	var key string = *result.SecretString
-	var secret string = *result.SecretString
+	var key string = *keyResult.SecretString
+	var secret string = *secretResult.SecretString
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("eu-west-2"),
