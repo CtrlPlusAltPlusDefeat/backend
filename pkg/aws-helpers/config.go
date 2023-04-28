@@ -9,6 +9,19 @@ import (
 )
 
 func GetConfig() aws.Config {
+	dbUrl := os.Getenv("DYNAMO_DB_URL")
+	if len(dbUrl) > 0 {
+		return getLocalConfig()
+	}
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		//we panic here because this is a fatal error, we cannot continue from this
+		panic(err)
+	}
+	return cfg
+}
+
+func getLocalConfig() aws.Config {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("eu-west-1"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
