@@ -51,13 +51,10 @@ func DefaultHandler(context context.Context, req *events.APIGatewayWebsocketProx
 		return apigateway.Response{}, err
 	}
 
-	data := models.Data{
-		Message: message,
-	}
-
+	data := models.NewData(message)
 	con := models.NewContext(context, &req.RequestContext.ConnectionID, &req.RequestContext.DomainName, &req.RequestContext.Stage)
 
-	Route(con, &data)
+	Route(con, data)
 
 	return apigateway.OkResponse(), nil
 }
