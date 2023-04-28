@@ -12,6 +12,7 @@ func Route(context *models.Context, data *models.Data) {
 
 	if data.Message.Service == models.Service.Player {
 		playerHandle(context, data)
+		return
 	}
 
 	res, err := db.Connection.Get(context.ConnectionId())
