@@ -17,14 +17,15 @@ func Route(context *events.APIGatewayWebsocketProxyRequestContext, body string) 
 		log.Println("Error decoding message", err)
 		return
 	}
+
 	log.Println("Route ", message.Service)
+
+	//inject ConnectionContext into context
+	ws.ConnectionContext = context
 
 	if message.Service == models.Service.Player {
 		playerHandle(&models.SocketData{RequestContext: context, Message: message})
 	}
-
-	//inject ConnectionContext into context
-	ws.ConnectionContext = context
 
 	res, err := db.Connection.Get(context.ConnectionID)
 	if err != nil {
