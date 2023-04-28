@@ -94,6 +94,11 @@ func (conn connection) GetBySessionId(sessionId string) ([]models.Connection, er
 			":v_sessionId": &types.AttributeValueMemberS{Value: sessionId},
 		}})
 
+	if err != nil {
+		log.Printf("Couldn't get %v from the table %s. Here's why: %v\n", sessionId, conn.table, err)
+		return connections, err
+	}
+
 	for _, item := range output.Items {
 		var connection models.Connection
 		err = attributevalue.UnmarshalMap(item, &connection)
