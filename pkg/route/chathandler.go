@@ -7,20 +7,15 @@ import (
 	"log"
 )
 
-func chatHandle(context *models.Context, data *models.Data) {
+func SendChat(context *models.Context, data *models.Data) error {
 	log.Printf("chatHandle: %s", data.Message.Action)
 
 	message := chat.MessageRequest{}
 	err := message.Decode(&data.Message)
 
 	if err != nil {
-		log.Println("Error decoding message", err)
-		return
+		return err
 	}
 
-	err = services.BroadcastMessage(context, message)
-
-	if err != nil {
-		log.Println("Error when attempting to send chat", err)
-	}
+	return services.BroadcastMessage(context, message)
 }

@@ -13,6 +13,7 @@ spin up a dynamodb client and inject into db package
 */
 func init() {
 	db.Configure()
+	route.Configure()
 }
 
 func main() {
