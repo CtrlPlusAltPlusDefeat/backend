@@ -10,10 +10,6 @@ import (
 	"log"
 )
 
-var (
-	 secretCache, _ = secretcache.New()
-)
-
 func GetConfig() aws.Config {
 	log.Printf("GetConfig #1")
 
@@ -64,30 +60,37 @@ func getLocalConfig() aws.Config {
 
 func getProductionConfig() aws.Config {
 	log.Printf("GetConfig #5")
-  
-	key, _ := secretCache.GetSecretString("BackendAccessKey")
+
+	secretCache, err1 := secretcache.New()
   
 	log.Printf("GetConfig #6")
-  
-	secret, _ := secretCache.GetSecretString("BackendSecretAccessKey")
+	log.Printf(fmt.Errorf("GetConfig #6 Error: %w", err1))
 
+	key, err2 := secretCache.GetSecretString("BackendAccessKey")
+  
 	log.Printf("GetConfig #7")
+	log.Printf(fmt.Errorf("GetConfig #7 Error: %w", err2))
+  
+	secret, err3 := secretCache.GetSecretString("BackendSecretAccessKey")
+
+	log.Printf("GetConfig #8")
+	log.Printf(fmt.Errorf("GetConfig #8 Error: %w", err3))
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("eu-west-1"),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(key, secret, "")),
 	)
 
-	log.Printf("GetConfig #8")
+	log.Printf("GetConfig #9")
 
 	if err != nil {
-		log.Printf("GetConfig #9")
+		log.Printf("GetConfig #10")
     
 		//we panic here because this is a fatal error, we cannot continue from this
 		panic(err)
 	}
 	
-	log.Printf("GetConfig #10")
+	log.Printf("GetConfig #11")
   
 	return cfg
 }
