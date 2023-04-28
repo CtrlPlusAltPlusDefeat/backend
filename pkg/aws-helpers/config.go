@@ -65,17 +65,17 @@ func getProductionConfig() aws.Config {
 	secretCache, err1 := secretcache.New()
   
 	log.Printf("GetConfig #6")
-	log.Printf(fmt.Errorf("GetConfig #6 Error: %w", err1))
+	log.Printf(err1.Error())
 
 	key, err2 := secretCache.GetSecretString("BackendAccessKey")
   
 	log.Printf("GetConfig #7")
-	log.Printf(fmt.Errorf("GetConfig #7 Error: %w", err2))
+	log.Printf(err2.Error())
   
 	secret, err3 := secretCache.GetSecretString("BackendSecretAccessKey")
 
 	log.Printf("GetConfig #8")
-	log.Printf(fmt.Errorf("GetConfig #8 Error: %w", err3))
+	log.Printf(err3.Error())
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("eu-west-1"),
@@ -83,6 +83,7 @@ func getProductionConfig() aws.Config {
 	)
 
 	log.Printf("GetConfig #9")
+	log.Printf(err.Error())
 
 	if err != nil {
 		log.Printf("GetConfig #10")
