@@ -44,9 +44,7 @@ func joinLobby(context *models.Context, message *models.Wrapper) error {
 		return err
 	}
 
-	context.LobbyId = &req.LobbyId
-
-	return services.Join(context, false)
+	return services.Join(context.ForLobby(&req.LobbyId), false)
 }
 
 func setLobbyName(context *models.Context, message *models.Wrapper) error {
@@ -57,9 +55,7 @@ func setLobbyName(context *models.Context, message *models.Wrapper) error {
 		return err
 	}
 
-	context.LobbyId = &req.LobbyId
-
-	return services.NameChange(context, &req.Text)
+	return services.NameChange(context.ForLobby(&req.LobbyId), &req.Text)
 }
 
 func getLobby(context *models.Context, message *models.Wrapper) error {
@@ -70,7 +66,5 @@ func getLobby(context *models.Context, message *models.Wrapper) error {
 		return err
 	}
 
-	context.LobbyId = &req.LobbyId
-
-	return services.Get(context)
+	return services.Get(context.ForLobby(&req.LobbyId))
 }

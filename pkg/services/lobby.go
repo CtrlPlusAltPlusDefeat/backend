@@ -12,9 +12,9 @@ import (
 func Create(context *models.Context) error {
 	id := uuid.New().String()
 
-	context.LobbyId = &id
+	context = context.ForSession(&id)
 
-	err := db.Lobby.Add(context.LobbyId)
+	err := db.Lobby.Add(context.LobbyId())
 
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func Create(context *models.Context) error {
 }
 
 func Join(context *models.Context, isAdmin bool) error {
-	player, err := db.LobbyPlayer.Add(context.LobbyId, context.SessionId, context.Connection.Id, isAdmin)
+	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
 
 	if err != nil {
 		return err
@@ -40,21 +40,21 @@ func Join(context *models.Context, isAdmin bool) error {
 }
 
 func Get(context *models.Context) error {
-	player, err := db.LobbyPlayer.Get(context.LobbyId, context.SessionId)
+	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 
 	if err != nil {
 		return err
 	}
 
-	if player.ConnectionId == *context.Connection.Id {
-		player, err = db.LobbyPlayer.UpdateConnectionId(context.LobbyId, context.SessionId, context.Connection.Id)
+	if player.ConnectionId == *context.ConnectionId() {
+		player, err = db.LobbyPlayer.UpdateConnectionId(context.LobbyId(), context.SessionId(), context.ConnectionId())
 
 		if err != nil {
 			return err
 		}
 	}
 
-	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId)
+	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func Get(context *models.Context) error {
 
 	var thisPlayer lobby.Player
 	for _, p := range players {
-		if p.SessionId == *context.SessionId {
+		if p.SessionId == *context.SessionId() {
 			thisPlayer = p
 			break
 		}
@@ -70,7 +70,7 @@ func Get(context *models.Context) error {
 
 	res := lobby.GetResponse{Player: thisPlayer, Lobby: lobby.Details{
 		Players: players,
-		LobbyId: *context.LobbyId,
+		LobbyId: *context.LobbyId(),
 	}}
 
 	bytes, err := res.Encode()
@@ -83,7 +83,7 @@ func Get(context *models.Context) error {
 }
 
 func NameChange(context *models.Context, name *string) error {
-	player, err := db.LobbyPlayer.UpdateName(context.LobbyId, context.SessionId, name)
+	player, err := db.LobbyPlayer.UpdateName(context.LobbyId(), context.SessionId(), name)
 
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func NameChange(context *models.Context, name *string) error {
 }
 
 func sendLobbyJoin(context *models.Context) error {
-	res := lobby.JoinResponse{LobbyId: *context.LobbyId}
+	res := lobby.JoinResponse{LobbyId: *context.LobbyId()}
 	bytes, err := res.Encode()
 
 	if err != nil {

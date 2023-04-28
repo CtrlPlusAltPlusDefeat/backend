@@ -19,8 +19,8 @@ var LocalConnections = make(map[string]*websocket.Conn)
 func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 	callbackURL := url.URL{
 		Scheme: "https",
-		Host:   *context.Connection.Host,
-		Path:   *context.Connection.Path,
+		Host:   *context.ConnectionHost(),
+		Path:   *context.ConnectionPath(),
 	}
 
 	log.Println("Creating API Gateway client for callback URL: ", callbackURL.String())
@@ -31,18 +31,16 @@ func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 }
 
 func SendToLobby(context *models.Context, msg []byte, excludeConnection bool) error {
-	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId)
+	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 	if err != nil {
 		return err
 	}
 	for _, p := range players {
-		if excludeConnection && p.ConnectionId == *context.Connection.Id {
+		if excludeConnection && p.ConnectionId == *context.ConnectionId() {
 			continue
 		}
 
-		con := context.ForConnection(&p.ConnectionId)
-
-		err = Send(&con, msg)
+		err = Send(context.ForConnection(&p.ConnectionId), msg)
 
 		if err != nil {
 			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
@@ -61,15 +59,15 @@ func Send(context *models.Context, data []byte) error {
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
 	if local == "1" {
-		return writeMessage(context.Connection.Id, data)
+		return writeMessage(context.ConnectionId(), data)
 	}
 
 	//use apigateway when not local
-	_, err := getClient(context).PostToConnection(context.Value, &apigatewaymanagementapi.PostToConnectionInput{
+	_, err := getClient(context).PostToConnection(context.Value(), &apigatewaymanagementapi.PostToConnectionInput{
 		Data:         data,
-		ConnectionId: context.Connection.Id,
+		ConnectionId: context.ConnectionId(),
 	})
-	return handleError(err, context.Connection.Id)
+	return handleError(err, context.ConnectionId())
 }
 
 // writeMessage this is only used when running locally

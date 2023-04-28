@@ -11,15 +11,14 @@ import (
 
 func CreateSession(context *models.Context) error {
 	id := uuid.New().String()
-	context.SessionId = &id
 
-	return SetSession(context)
+	return SetSession(context.ForSession(&id))
 }
 
 func SetSession(context *models.Context) error {
-	log.Printf("SetSession for connection %s to %s", *context.Connection.Id, *context.SessionId)
+	log.Printf("SetSession for connection %s to %s", *context.ConnectionId(), *context.SessionId())
 
-	connection, err := db.Connection.Get(context.Connection.Id)
+	connection, err := db.Connection.Get(context.ConnectionId())
 
 	if err != nil {
 		return err
@@ -33,10 +32,9 @@ func SetSession(context *models.Context) error {
 	}
 
 	//check if we need to update the session
-	if connection.SessionId != *context.SessionId {
-		connection.SessionId = *context.SessionId
+	if connection.SessionId != *context.SessionId() {
 
-		err = db.Connection.Update(context.Connection.Id, context.SessionId)
+		err = db.Connection.Update(context.ConnectionId(), context.SessionId())
 
 		if err != nil {
 			return err
@@ -44,7 +42,7 @@ func SetSession(context *models.Context) error {
 	}
 
 	//create response
-	msg, err := player.SessionResponse{SessionId: *context.SessionId}.Encode()
+	msg, err := player.SessionResponse{SessionId: *context.SessionId()}.Encode()
 
 	if err != nil {
 		return err
@@ -54,7 +52,7 @@ func SetSession(context *models.Context) error {
 }
 
 func DestroySession(context *models.Context) error {
-	connections, err := db.Connection.GetBySessionId(context.SessionId)
+	connections, err := db.Connection.GetBySessionId(context.SessionId())
 
 	if err != nil || len(connections) == 0 {
 		return err

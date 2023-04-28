@@ -14,7 +14,7 @@ func BroadcastMessage(context *models.Context, chatMessage chat.MessageRequest) 
 		return err
 	}
 
-	response, err := chat.MessageResponse{Text: chatMessage.Text, ConnectionId: *context.Connection.Id}.Encode()
+	response, err := chat.MessageResponse{Text: chatMessage.Text, ConnectionId: *context.ConnectionId()}.Encode()
 	if err != nil {
 		return err
 	}
@@ -24,9 +24,7 @@ func BroadcastMessage(context *models.Context, chatMessage chat.MessageRequest) 
 	for index, con := range connections {
 		log.Println("Sending ", chatMessage.Text, " to connection ", index)
 
-		connectionContext := context.ForConnection(&con.ConnectionId)
-
-		sendChat(&connectionContext, response)
+		sendChat(context.ForConnection(&con.ConnectionId), response)
 	}
 	return nil
 }

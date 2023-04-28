@@ -48,7 +48,5 @@ func useSession(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	context.SessionId = &useSessionReq.SessionId
-
-	return services.SetSession(context)
+	return services.SetSession(context.ForSession(&useSessionReq.SessionId))
 }
