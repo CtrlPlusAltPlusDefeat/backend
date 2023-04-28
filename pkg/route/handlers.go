@@ -44,14 +44,7 @@ func DefaultHandler(context context.Context, req *events.APIGatewayWebsocketProx
 	log.Printf("DefaultHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 	log.Printf("msg %s", req.Body)
 
-	var message models.Wrapper
-	err := message.Decode([]byte(req.Body))
-
-	if err != nil {
-		return apigateway.Response{}, err
-	}
-
-	data := models.NewData(message)
+	data, _ := models.NewData(req.Body)
 	con := models.NewContext(context, &req.RequestContext.ConnectionID, &req.RequestContext.DomainName, &req.RequestContext.Stage)
 
 	Route(con, data)
