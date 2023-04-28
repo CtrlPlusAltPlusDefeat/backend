@@ -24,11 +24,15 @@ func (c chatT) BroadcastMessage(connectionId string, chatMessage chat.MessageReq
 		return err
 	}
 
-	log.Println("Sending ", chatMessage.Text, " to all connections")
-	for _, con := range connections {
+	log.Println("Sending ", chatMessage.Text, " to ", len(connections), " connections")
+
+	for index, con := range connections {
 		if con.ConnectionId == connectionId {
 			continue
 		}
+
+		log.Println("Sending ", chatMessage.Text, " to connection ", index)
+
 		sendChat(con.ConnectionId, response)
 	}
 	return nil
