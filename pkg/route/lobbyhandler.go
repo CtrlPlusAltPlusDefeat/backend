@@ -12,7 +12,7 @@ func CreateLobby(context *models.Context, data *models.Data) error {
 
 func JoinLobby(context *models.Context, data *models.Data) error {
 	req := lobby.JoinRequest{}
-	err := req.Decode(&data.Message)
+	err := data.DecodeTo(req)
 
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func JoinLobby(context *models.Context, data *models.Data) error {
 
 func SetLobbyName(context *models.Context, data *models.Data) error {
 	req := lobby.SetNameRequest{}
-	err := req.Decode(&data.Message)
+	err := data.DecodeTo(req)
 
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func SetLobbyName(context *models.Context, data *models.Data) error {
 
 func GetLobby(context *models.Context, data *models.Data) error {
 	req := lobby.GetRequest{}
-	err := req.Decode(&data.Message)
+	err := data.DecodeTo(req)
 
 	if err != nil {
 		return err

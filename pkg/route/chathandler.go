@@ -4,18 +4,15 @@ import (
 	"backend/pkg/models"
 	"backend/pkg/models/chat"
 	"backend/pkg/services"
-	"log"
 )
 
 func SendChat(context *models.Context, data *models.Data) error {
-	log.Printf("chatHandle: %s", data.Message.Action)
-
-	message := chat.MessageRequest{}
-	err := message.Decode(&data.Message)
+	req := chat.MessageRequest{}
+	err := data.DecodeTo(req)
 
 	if err != nil {
 		return err
 	}
 
-	return services.BroadcastMessage(context, message)
+	return services.BroadcastMessage(context, req)
 }

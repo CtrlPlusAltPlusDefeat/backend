@@ -12,18 +12,18 @@ func CreateSession(context *models.Context, data *models.Data) error {
 }
 
 func UseSession(context *models.Context, data *models.Data) error {
-	useSessionReq := player.SessionUseRequest{}
-	err := useSessionReq.Decode(&data.Message)
+	req := player.SessionUseRequest{}
+	err := data.DecodeTo(req)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = uuid.Parse(useSessionReq.SessionId)
+	_, err = uuid.Parse(req.SessionId)
 
 	if err != nil {
 		return err
 	}
 
-	return services.SetSession(context.ForSession(&useSessionReq.SessionId))
+	return services.SetSession(context.ForSession(&req.SessionId))
 }

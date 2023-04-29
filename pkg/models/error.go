@@ -15,8 +15,8 @@ func (res ErrorResponse) New(s string, a string) ([]byte, error) {
 	return json.Marshal(message)
 }
 
-func (res ErrorResponse) UseWrapper(w Wrapper) ([]byte, error) {
+func (res ErrorResponse) UseRoute(a *Route) ([]byte, error) {
 	data, _ := json.Marshal(res)
-	message := Wrapper{Service: w.Service, Action: w.Action, Data: string(data)}
+	message := Wrapper{Service: *a.Service(), Action: *a.Action(), Data: string(data)}
 	return json.Marshal(message)
 }

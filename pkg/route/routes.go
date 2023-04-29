@@ -52,7 +52,7 @@ func communicateMiddleware(next Handler) Handler {
 		err := next(context, data)
 
 		if err != nil {
-			res, err := models.ErrorResponse{Error: "Something went wrong handling this request."}.UseWrapper(data.Message)
+			res, err := models.ErrorResponse{Error: "Something went wrong handling this request."}.UseRoute(data.Action)
 
 			if err != nil {
 				return err
@@ -68,8 +68,7 @@ func communicateMiddleware(next Handler) Handler {
 }
 
 func Route(context *models.Context, data *models.Data) {
-
-	route := data.Message.Service + "|" + data.Message.Action
+	route := data.Action.Value()
 
 	log.Printf("Beginning Invoking '%s'", route)
 
