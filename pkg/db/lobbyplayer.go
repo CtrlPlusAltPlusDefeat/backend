@@ -32,6 +32,7 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 		}})
 	if err != nil {
 		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobbyId, l.table, err)
+		log.Printf("lobbyId: %s, sessionId: %s, connectionId: %s", *lobbyId, *sessionId, *connectionId)
 	}
 
 	err = attributevalue.UnmarshalMap(item.Attributes, &player)

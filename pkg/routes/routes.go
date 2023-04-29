@@ -19,10 +19,10 @@ var (
 func Configure() {
 	add("player|create-session", services.CreateSession, ErrorCommunicateMiddleware)
 	add("player|use-session", services.UseSession, ErrorCommunicateMiddleware)
-	add("lobby|create", services.CreateLobby, SessionMiddleware)
-	add("lobby|join", services.JoinLobby, SessionMiddleware, LobbyMiddleware)
-	add("lobby|set-name", services.SetLobbyName, SessionMiddleware, LobbyMiddleware)
-	add("chat|send", services.SendChat, SessionMiddleware, LobbyMiddleware)
+	add("lobby|create", services.CreateLobby, ErrorCommunicateMiddleware, SessionMiddleware)
+	add("lobby|join", services.JoinLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("lobby|set-name", services.SetLobbyName, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {
@@ -39,6 +39,8 @@ func Execute(context *models.Context, data *models.Data) {
 	log.Printf("Beginning Invoking '%s'", route)
 
 	if handler, exists := handlers[route]; exists {
+		log.Printf("handler")
+
 		err := handler(context, data)
 
 		if err != nil {
