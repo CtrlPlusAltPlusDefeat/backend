@@ -2,7 +2,7 @@ package main
 
 import (
 	"backend/pkg/db"
-	"backend/pkg/route"
+	"backend/pkg/handlers"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -16,5 +16,5 @@ func init() {
 }
 
 func main() {
-	lambda.Start(route.DisconnectHandler)
+	lambda.Start(handlers.DisconnectHandler)
 }

@@ -8,7 +8,18 @@ import (
 	"log"
 )
 
-func BroadcastMessage(context *models.Context, chatMessage chat.MessageRequest) error {
+func SendChat(context *models.Context, data *models.Data) error {
+	req := chat.MessageRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return broadcastMessage(context, req)
+}
+
+func broadcastMessage(context *models.Context, chatMessage chat.MessageRequest) error {
 	connections, err := db.Connection.GetAll()
 	if err != nil {
 		return err

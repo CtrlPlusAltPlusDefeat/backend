@@ -2,7 +2,8 @@ package main
 
 import (
 	"backend/pkg/db"
-	"backend/pkg/route"
+	"backend/pkg/handlers"
+	"backend/pkg/routes"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -13,9 +14,9 @@ spin up a dynamodb client and inject into db package
 */
 func init() {
 	db.Configure()
-	route.Configure()
+	routes.Configure()
 }
 
 func main() {
-	lambda.Start(route.DefaultHandler)
+	lambda.Start(handlers.DefaultHandler)
 }

@@ -8,7 +8,44 @@ import (
 	"github.com/google/uuid"
 )
 
-func Create(context *models.Context) error {
+func CreateLobby(context *models.Context, data *models.Data) error {
+	return create(context)
+}
+
+func JoinLobby(context *models.Context, data *models.Data) error {
+	req := lobby.JoinRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return join(context.ForLobby(&req.LobbyId), false)
+}
+
+func SetLobbyName(context *models.Context, data *models.Data) error {
+	req := lobby.SetNameRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return nameChange(context.ForLobby(&req.LobbyId), &req.Text)
+}
+
+func GetLobby(context *models.Context, data *models.Data) error {
+	req := lobby.GetRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return get(context.ForLobby(&req.LobbyId))
+}
+
+func create(context *models.Context) error {
 	id := uuid.New().String()
 
 	context = context.ForSession(&id)
@@ -19,10 +56,10 @@ func Create(context *models.Context) error {
 		return err
 	}
 
-	return Join(context, true)
+	return join(context, true)
 }
 
-func Join(context *models.Context, isAdmin bool) error {
+func join(context *models.Context, isAdmin bool) error {
 	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
 
 	if err != nil {
@@ -38,7 +75,7 @@ func Join(context *models.Context, isAdmin bool) error {
 	return sendLobbyJoin(context)
 }
 
-func Get(context *models.Context) error {
+func get(context *models.Context) error {
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 
 	if err != nil {
@@ -76,7 +113,7 @@ func Get(context *models.Context) error {
 	return ws.Send(context, route, res)
 }
 
-func NameChange(context *models.Context, name *string) error {
+func nameChange(context *models.Context, name *string) error {
 	player, err := db.LobbyPlayer.UpdateName(context.LobbyId(), context.SessionId(), name)
 
 	if err != nil {

@@ -9,13 +9,34 @@ import (
 	"log"
 )
 
-func CreateSession(context *models.Context) error {
-	id := uuid.New().String()
-
-	return SetSession(context.ForSession(&id))
+func CreateSession(context *models.Context, data *models.Data) error {
+	return createSession(context)
 }
 
-func SetSession(context *models.Context) error {
+func UseSession(context *models.Context, data *models.Data) error {
+	req := player.SessionUseRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = uuid.Parse(req.SessionId)
+
+	if err != nil {
+		return err
+	}
+
+	return setSession(context.ForSession(&req.SessionId))
+}
+
+func createSession(context *models.Context) error {
+	id := uuid.New().String()
+
+	return setSession(context.ForSession(&id))
+}
+
+func setSession(context *models.Context) error {
 	log.Printf("SetSession for connection %s to %s", *context.ConnectionId(), *context.SessionId())
 
 	connection, err := db.Connection.Get(context.ConnectionId())
@@ -25,7 +46,7 @@ func SetSession(context *models.Context) error {
 	}
 
 	// Delete all sessions using this sessionId
-	err = DestroySession(context)
+	err = destroySession(context)
 
 	if err != nil {
 		return err
@@ -48,7 +69,7 @@ func SetSession(context *models.Context) error {
 	return ws.Send(context, route, res)
 }
 
-func DestroySession(context *models.Context) error {
+func destroySession(context *models.Context) error {
 	connections, err := db.Connection.GetBySessionId(context.SessionId())
 
 	if err != nil || len(connections) == 0 {
