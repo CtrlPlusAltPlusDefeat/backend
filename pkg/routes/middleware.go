@@ -11,9 +11,7 @@ func ErrorCommunicateMiddleware(next Handler) Handler {
 		err := next(context, data)
 
 		if err != nil {
-			res := models.ErrorResponse{Error: "Something went wrong handling this request."}
-
-			err = ws.Send(context, data.Route(), res)
+			_ = ws.Send(context, data.Route(), models.ErrorResponse{Error: "Well that didn't work did it. I'd say try again but it probably won't work then either."})
 
 			return err
 		}
