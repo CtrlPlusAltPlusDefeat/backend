@@ -10,7 +10,7 @@ import (
 
 func SendChat(context *models.Context, data *models.Data) error {
 	req := chat.MessageRequest{}
-	err := data.DecodeTo(req)
+	err := data.DecodeTo(&req)
 
 	if err != nil {
 		return err
