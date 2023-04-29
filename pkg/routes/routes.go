@@ -44,5 +44,7 @@ func Execute(context *models.Context, data *models.Data) {
 		if err != nil {
 			log.Printf("Error Invoking '%s': %s", route, err)
 		}
+	} else {
+		log.Printf("Error Invoking '%s': Couldn't find route.", route)
 	}
 }
