@@ -29,7 +29,7 @@ func SendChat(context *models.Context, data *models.Data) error {
 	for index, player := range players {
 		log.Println("Sending ", req.Text, " to player ", index)
 
-		err := ws.Send(context.ForConnection(&player.ConnectionId), route, chat.MessageResponse{Text: req.Text, ConnectionId: player.Id})
+		err := ws.Send(context.ForConnection(&player.ConnectionId), route, chat.MessageResponse{Text: req.Text, PlayerId: player.Id})
 
 		if err != nil {
 			log.Printf("Error sending: %s", err)
