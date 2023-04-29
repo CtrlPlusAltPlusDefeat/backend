@@ -24,13 +24,11 @@ var Action = lobbyAction{
 		Create:  "create",
 		Join:    "join",
 		SetName: "set-name",
-		Get:     "get",
 	},
 	Server: serverAction{
 		Joined:       "joined",
 		PlayerJoined: "player-joined",
 		PlayerLeft:   "player-left",
 		NameChanged:  "name-change",
-		Get:          "get",
 	},
 }

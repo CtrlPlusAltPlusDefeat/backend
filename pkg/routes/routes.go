@@ -23,7 +23,6 @@ func Configure() {
 	add("lobby|create", services.CreateLobby, SessionMiddleware)
 	add("lobby|join", services.JoinLobby, SessionMiddleware)
 	add("lobby|set-name", services.SetLobbyName, SessionMiddleware)
-	add("lobby|get", services.GetLobby, SessionMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {
