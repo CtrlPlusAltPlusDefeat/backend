@@ -97,7 +97,7 @@ func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (lobby.Player, err
 	}
 
 	if len(item.Item) == 0 {
-		return player, fmt.Errorf("connection not found")
+		return player, fmt.Errorf("player not found")
 	}
 
 	err = attributevalue.UnmarshalMap(item.Item, &player)
