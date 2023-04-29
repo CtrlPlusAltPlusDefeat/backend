@@ -14,3 +14,7 @@ type Details struct {
 	Players []Player `json:"players"`
 	LobbyId string   `json:"lobbyId"`
 }
+
+type Lobby struct {
+	LobbyId string `json:"lobbyId"`
+}

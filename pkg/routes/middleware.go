@@ -49,6 +49,12 @@ func LobbyMiddleware(next Handler) Handler {
 			return err
 		}
 
-		return next(context.ForLobby(&req.LobbyId), data)
+		res, err := db.Lobby.Get(&req.LobbyId)
+
+		if err != nil {
+			return err
+		}
+
+		return next(context.ForLobby(&res.LobbyId), data)
 	}
 }

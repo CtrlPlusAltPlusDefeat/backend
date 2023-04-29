@@ -146,14 +146,18 @@ func (l *lobbyplayer) UpdateName(lobbyId *string, sessionId *string, name *strin
 		UpdateExpression: aws.String("set #Name=:Name"),
 		ReturnValues:     types.ReturnValueAllNew,
 	})
+
 	if err != nil {
 		log.Printf("Error updating sessionId %s to name: %s. %s", *sessionId, *name, err)
 
 		return player, err
 	}
+
 	err = attributevalue.UnmarshalMap(item.Attributes, &player)
+
 	if err != nil {
 		log.Printf("Error unmarshalling dyanmodb map: %s", err)
 	}
+
 	return player, err
 }
