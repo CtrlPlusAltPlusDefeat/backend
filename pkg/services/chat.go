@@ -16,28 +16,25 @@ func SendChat(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	return broadcastMessage(context, req)
-}
+	players, err := db.LobbyPlayer.GetPlayers(&req.LobbyId)
 
-func broadcastMessage(context *models.Context, chatMessage chat.MessageRequest) error {
-	connections, err := db.Connection.GetAll()
 	if err != nil {
 		return err
 	}
 
-	response := chat.MessageResponse{Text: chatMessage.Text, ConnectionId: *context.ConnectionId()}
 	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Receive)
 
-	log.Println("Sending ", chatMessage.Text, " to ", len(connections), " connections")
+	log.Println("Sending ", req.Text, " to ", len(players), " players")
 
-	for index, con := range connections {
-		log.Println("Sending ", chatMessage.Text, " to connection ", index)
+	for index, player := range players {
+		log.Println("Sending ", req.Text, " to player ", index)
 
-		err := ws.Send(context.ForConnection(&con.ConnectionId), route, response)
+		err := ws.Send(context.ForConnection(&player.ConnectionId), route, chat.MessageResponse{Text: req.Text, ConnectionId: player.Id})
 
 		if err != nil {
 			log.Printf("Error sending: %s", err)
 		}
 	}
+
 	return nil
 }
