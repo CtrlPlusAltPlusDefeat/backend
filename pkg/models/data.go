@@ -3,8 +3,8 @@ package models
 import "encoding/json"
 
 type Data struct {
-	Action *Route
-	value  []byte
+	route *Route
+	value []byte
 }
 
 func NewData(request string) (*Data, error) {
@@ -18,7 +18,7 @@ func NewData(request string) (*Data, error) {
 	bytes := []byte(message.Data)
 
 	return &Data{
-		Action: &Route{
+		route: &Route{
 			action:  &message.Action,
 			service: &message.Service,
 		},
@@ -28,4 +28,8 @@ func NewData(request string) (*Data, error) {
 
 func (d *Data) DecodeTo(req interface{}) error {
 	return json.Unmarshal(d.value, req)
+}
+
+func (d *Data) Route() *Route {
+	return d.route
 }
