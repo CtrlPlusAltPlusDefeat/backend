@@ -38,7 +38,11 @@ func SendToLobby(context *models.Context, route *models.Route, message interface
 		return err
 	}
 
-	for _, p := range players {
+	log.Println("Sending to ", len(players), " players")
+
+	for index, p := range players {
+		log.Println("Sending to player ", index)
+
 		err = Send(context.ForConnection(&p.ConnectionId), route, message)
 
 		if err != nil {

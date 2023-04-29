@@ -5,7 +5,6 @@ import (
 	"backend/pkg/models"
 	"backend/pkg/models/chat"
 	"backend/pkg/ws"
-	"log"
 )
 
 func SendChat(context *models.Context, data *models.Data) error {
@@ -16,24 +15,17 @@ func SendChat(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
+	sender, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 
 	if err != nil {
 		return err
 	}
 
 	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Receive)
+	err = ws.SendToLobby(context, route, chat.MessageResponse{Text: req.Text, PlayerId: sender.Id})
 
-	log.Println("Sending ", req.Text, " to ", len(players), " players")
-
-	for index, player := range players {
-		log.Println("Sending ", req.Text, " to player ", index)
-
-		err := ws.Send(context.ForConnection(&player.ConnectionId), route, chat.MessageResponse{Text: req.Text, PlayerId: player.Id})
-
-		if err != nil {
-			log.Printf("Error sending: %s", err)
-		}
+	if err != nil {
+		return err
 	}
 
 	return nil
