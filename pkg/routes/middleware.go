@@ -11,9 +11,7 @@ func ErrorCommunicateMiddleware(next Handler) Handler {
 		err := next(context, data)
 
 		if err != nil {
-			res := models.ErrorResponse{Error: "Something went wrong handling this request."}
-
-			err = ws.Send(context, data.Route(), res)
+			_ = ws.Send(context, data.Route(), models.ErrorResponse{Error: "Well that didn't work did it. I'd say try again but it probably won't work then either."})
 
 			return err
 		}
@@ -31,5 +29,30 @@ func SessionMiddleware(next Handler) Handler {
 		}
 
 		return next(context.ForSession(&res.SessionId), data)
+	}
+}
+
+func LobbyMiddleware(next Handler) Handler {
+	type (
+		lobbyId struct {
+			LobbyId string `json:"lobbyId"`
+		}
+	)
+
+	return func(context *models.Context, data *models.Data) error {
+		req := lobbyId{}
+		err := data.DecodeTo(&req)
+
+		if err != nil {
+			return err
+		}
+
+		res, err := db.Lobby.Get(&req.LobbyId)
+
+		if err != nil {
+			return err
+		}
+
+		return next(context.ForLobby(&res.LobbyId), data)
 	}
 }

@@ -3,6 +3,7 @@ package db
 import (
 	"backend/pkg/models/lobby"
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -29,7 +30,9 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 			"Name":         &types.AttributeValueMemberS{Value: ""},
 			"Points":       &types.AttributeValueMemberN{Value: "0"},
 			"IsAdmin":      &types.AttributeValueMemberBOOL{Value: isAdmin},
-		}})
+		},
+		ReturnValues: types.ReturnValueAllOld,
+	})
 	if err != nil {
 		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobbyId, l.table, err)
 	}
@@ -92,6 +95,11 @@ func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (lobby.Player, err
 		log.Printf("Couldn't query %s table. Here's why: %v\n", l.table, err)
 		return player, err
 	}
+
+	if len(item.Item) == 0 {
+		return player, fmt.Errorf("player not found")
+	}
+
 	err = attributevalue.UnmarshalMap(item.Item, &player)
 	if err != nil {
 		log.Printf("Error unmarshalling lobby.Player: %s", err)
@@ -146,14 +154,18 @@ func (l *lobbyplayer) UpdateName(lobbyId *string, sessionId *string, name *strin
 		UpdateExpression: aws.String("set #Name=:Name"),
 		ReturnValues:     types.ReturnValueAllNew,
 	})
+
 	if err != nil {
 		log.Printf("Error updating sessionId %s to name: %s. %s", *sessionId, *name, err)
 
 		return player, err
 	}
+
 	err = attributevalue.UnmarshalMap(item.Attributes, &player)
+
 	if err != nil {
 		log.Printf("Error unmarshalling dyanmodb map: %s", err)
 	}
+
 	return player, err
 }

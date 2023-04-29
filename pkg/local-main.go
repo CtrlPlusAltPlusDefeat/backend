@@ -4,6 +4,7 @@ import (
 	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
 	"backend/pkg/handlers"
+	"backend/pkg/routes"
 	"backend/pkg/ws"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
@@ -24,6 +25,8 @@ var upgrader = websocket.Upgrader{
 func init() {
 	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
 	db.DynamoDb = dbClient
+	routes.Configure()
+
 }
 
 func main() {

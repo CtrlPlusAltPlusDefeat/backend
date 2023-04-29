@@ -3,6 +3,7 @@ package db
 import (
 	"backend/pkg/models"
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -73,6 +74,11 @@ func (conn connection) Get(connectionId *string) (models.Connection, error) {
 		log.Printf("Couldn't get %v from the table %s. Here's why: %v\n", connectionId, conn.table, err)
 		return connectionItem, err
 	}
+
+	if len(res.Item) == 0 {
+		return connectionItem, fmt.Errorf("connection not found")
+	}
+
 	err = attributevalue.UnmarshalMap(res.Item, &connectionItem)
 	if err != nil {
 		log.Printf("Error unmarshalling dyanmodb map: %s", err)
