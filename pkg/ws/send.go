@@ -101,10 +101,7 @@ func handleError(err error, id *string) error {
 	if err == nil {
 		return err
 	}
-
-	// Casting to the awserr.Error type will allow you to inspect the error code returned by the service in code. The
-	// error code can be used to switch on context specific functionality.
-
+	
 	if err != nil {
 		var serializationError *smithy.SerializationError
 		if errors.As(err, &serializationError) {

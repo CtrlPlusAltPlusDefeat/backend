@@ -15,7 +15,7 @@ func CreateSession(context *models.Context, data *models.Data) error {
 
 func UseSession(context *models.Context, data *models.Data) error {
 	req := player.SessionUseRequest{}
-	err := data.DecodeTo(req)
+	err := data.DecodeTo(&req)
 
 	if err != nil {
 		return err
