@@ -33,3 +33,22 @@ func SessionMiddleware(next Handler) Handler {
 		return next(context.ForSession(&res.SessionId), data)
 	}
 }
+
+func LobbyMiddleware(next Handler) Handler {
+	type (
+		lobbyId struct {
+			LobbyId string `json:"lobbyId"`
+		}
+	)
+
+	return func(context *models.Context, data *models.Data) error {
+		req := lobbyId{}
+		err := data.DecodeTo(&req)
+
+		if err != nil {
+			return err
+		}
+
+		return next(context.ForLobby(&req.LobbyId), data)
+	}
+}

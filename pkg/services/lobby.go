@@ -23,23 +23,12 @@ func CreateLobby(context *models.Context, data *models.Data) error {
 }
 
 func JoinLobby(context *models.Context, data *models.Data) error {
-	req := lobby.JoinRequest{}
-	err := data.DecodeTo(&req)
-
-	context = context.ForLobby(&req.LobbyId)
-
-	if err != nil {
-		return err
-	}
-
 	return join(context, false)
 }
 
 func SetLobbyName(context *models.Context, data *models.Data) error {
 	req := lobby.SetNameRequest{}
 	err := data.DecodeTo(&req)
-
-	context = context.ForLobby(&req.LobbyId)
 
 	if err != nil {
 		return err

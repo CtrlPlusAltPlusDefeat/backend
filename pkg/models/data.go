@@ -4,7 +4,7 @@ import "encoding/json"
 
 type Data struct {
 	route *Route
-	value []byte
+	data  []byte
 }
 
 func NewData(request string) (*Data, error) {
@@ -15,19 +15,19 @@ func NewData(request string) (*Data, error) {
 		return nil, err
 	}
 
-	bytes := []byte(message.Data)
+	data := []byte(message.Data)
 
 	return &Data{
 		route: &Route{
 			action:  &message.Action,
 			service: &message.Service,
 		},
-		value: bytes,
+		data: data,
 	}, nil
 }
 
 func (d *Data) DecodeTo(req interface{}) error {
-	return json.Unmarshal(d.value, req)
+	return json.Unmarshal(d.data, req)
 }
 
 func (d *Data) Route() *Route {

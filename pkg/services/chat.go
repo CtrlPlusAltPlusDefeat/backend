@@ -16,7 +16,7 @@ func SendChat(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	players, err := db.LobbyPlayer.GetPlayers(&req.LobbyId)
+	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 
 	if err != nil {
 		return err

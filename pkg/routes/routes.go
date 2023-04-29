@@ -19,10 +19,10 @@ var (
 func Configure() {
 	add("player|create-session", services.CreateSession, ErrorCommunicateMiddleware)
 	add("player|use-session", services.UseSession, ErrorCommunicateMiddleware)
-	add("chat|send", services.SendChat, SessionMiddleware)
 	add("lobby|create", services.CreateLobby, SessionMiddleware)
-	add("lobby|join", services.JoinLobby, SessionMiddleware)
-	add("lobby|set-name", services.SetLobbyName, SessionMiddleware)
+	add("lobby|join", services.JoinLobby, SessionMiddleware, LobbyMiddleware)
+	add("lobby|set-name", services.SetLobbyName, SessionMiddleware, LobbyMiddleware)
+	add("chat|send", services.SendChat, SessionMiddleware, LobbyMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {
