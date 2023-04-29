@@ -25,7 +25,7 @@ jobs:
 
       - name: Build
         run: |
-          go build -o "./dist/${{ matrix.function }}/main" "./pkg/handlers/${{ matrix.function }}/${{ matrix.function }}.go"
+          go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
 
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}

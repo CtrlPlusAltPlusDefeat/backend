@@ -4,6 +4,7 @@ import (
 	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"encoding/json"
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi/types"
@@ -30,22 +31,25 @@ func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 	})
 }
 
-func SendToLobby(context *models.Context, msg []byte, excludeConnection bool) error {
+func SendToLobby(context *models.Context, route *models.Route, message interface{}, excludeConnection bool) error {
 	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
+
 	if err != nil {
 		return err
 	}
+
 	for _, p := range players {
 		if excludeConnection && p.ConnectionId == *context.ConnectionId() {
 			continue
 		}
 
-		err = Send(context.ForConnection(&p.ConnectionId), msg)
+		err = Send(context.ForConnection(&p.ConnectionId), route, message)
 
 		if err != nil {
 			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
 		}
 	}
+
 	return nil
 }
 
@@ -53,8 +57,14 @@ func SendToLobby(context *models.Context, msg []byte, excludeConnection bool) er
 // results in an error is if the connection ID is no longer valid. This can occur when a client disconnected from the
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
-func Send(context *models.Context, data []byte) error {
+func Send(context *models.Context, route *models.Route, message interface{}) error {
+
+	value, _ := json.Marshal(message)
+	wrapper := models.Wrapper{Service: *route.Service(), Action: *route.Action(), Data: string(value)}
+	data, _ := json.Marshal(wrapper)
+
 	log.Printf("Sending: %s", data)
+
 	// check env vars to see if its running locally if so we can pull connection from map and write
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")

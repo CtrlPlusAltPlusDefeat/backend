@@ -6,10 +6,46 @@ import (
 	"backend/pkg/models/lobby"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
-	"log"
 )
 
-func Create(context *models.Context) error {
+func CreateLobby(context *models.Context, data *models.Data) error {
+	return create(context)
+}
+
+func JoinLobby(context *models.Context, data *models.Data) error {
+	req := lobby.JoinRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return join(context.ForLobby(&req.LobbyId), false)
+}
+
+func SetLobbyName(context *models.Context, data *models.Data) error {
+	req := lobby.SetNameRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return nameChange(context.ForLobby(&req.LobbyId), &req.Text)
+}
+
+func GetLobby(context *models.Context, data *models.Data) error {
+	req := lobby.GetRequest{}
+	err := data.DecodeTo(req)
+
+	if err != nil {
+		return err
+	}
+
+	return get(context.ForLobby(&req.LobbyId))
+}
+
+func create(context *models.Context) error {
 	id := uuid.New().String()
 
 	context = context.ForSession(&id)
@@ -20,10 +56,10 @@ func Create(context *models.Context) error {
 		return err
 	}
 
-	return Join(context, true)
+	return join(context, true)
 }
 
-func Join(context *models.Context, isAdmin bool) error {
+func join(context *models.Context, isAdmin bool) error {
 	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
 
 	if err != nil {
@@ -39,7 +75,7 @@ func Join(context *models.Context, isAdmin bool) error {
 	return sendLobbyJoin(context)
 }
 
-func Get(context *models.Context) error {
+func get(context *models.Context) error {
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 
 	if err != nil {
@@ -72,17 +108,12 @@ func Get(context *models.Context) error {
 		Players: players,
 		LobbyId: *context.LobbyId(),
 	}}
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Get)
 
-	bytes, err := res.Encode()
-
-	if err != nil {
-		return err
-	}
-
-	return ws.Send(context, bytes)
+	return ws.Send(context, route, res)
 }
 
-func NameChange(context *models.Context, name *string) error {
+func nameChange(context *models.Context, name *string) error {
 	player, err := db.LobbyPlayer.UpdateName(context.LobbyId(), context.SessionId(), name)
 
 	if err != nil {
@@ -94,35 +125,21 @@ func NameChange(context *models.Context, name *string) error {
 
 func sendLobbyJoin(context *models.Context) error {
 	res := lobby.JoinResponse{LobbyId: *context.LobbyId()}
-	bytes, err := res.Encode()
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
 
-	if err != nil {
-		return err
-	}
-
-	return ws.Send(context, bytes)
+	return ws.Send(context, route, res)
 }
 
 func onPlayerJoin(context *models.Context, player *lobby.Player) error {
 	response := lobby.PlayerJoinResponse{Player: *player}
-	bytes, err := response.Encode()
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
 
-	if err != nil {
-		log.Printf("onPlayerJoin error encoding response")
-		return err
-	}
-
-	return ws.SendToLobby(context, bytes, true)
+	return ws.SendToLobby(context, route, response, true)
 }
 
 func onPlayerNameChange(context *models.Context, player *lobby.Player) error {
 	response := lobby.NameChangeResponse{Player: *player}
-	bytes, err := response.Encode()
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.NameChanged)
 
-	if err != nil {
-		log.Printf("onPlayerNameChange error encoding response")
-		return err
-	}
-
-	return ws.SendToLobby(context, bytes, false)
+	return ws.SendToLobby(context, route, response, false)
 }

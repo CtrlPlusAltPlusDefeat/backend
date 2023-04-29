@@ -3,7 +3,7 @@ package main
 import (
 	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
-	"backend/pkg/route"
+	"backend/pkg/handlers"
 	"backend/pkg/ws"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
@@ -57,7 +57,7 @@ func handleConnection(conn *websocket.Conn) {
 	connectionId := uuid.New().String()
 	ws.LocalConnections[connectionId] = conn
 
-	_, err := route.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+	_, err := handlers.ConnectHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 		RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId, RequestID: ""},
 	})
 
@@ -75,7 +75,7 @@ func handleConnection(conn *websocket.Conn) {
 		// print out that message for clarity
 		log.Println(string(p))
 
-		_, _ = route.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
+		_, _ = handlers.DefaultHandler(context.TODO(), &events.APIGatewayWebsocketProxyRequest{
 			RequestContext: events.APIGatewayWebsocketProxyRequestContext{ConnectionID: connectionId},
 			Body:           string(p),
 		})
