@@ -52,13 +52,9 @@ func communicateMiddleware(next Handler) Handler {
 		err := next(context, data)
 
 		if err != nil {
-			res, err := models.ErrorResponse{Error: "Something went wrong handling this request."}.UseRoute(data.Route())
+			res := models.ErrorResponse{Error: "Something went wrong handling this request."}
 
-			if err != nil {
-				return err
-			}
-
-			err = ws.Send(context, res)
+			err = ws.Send(context, data.Route(), res)
 
 			return err
 		}

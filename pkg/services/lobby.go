@@ -6,7 +6,6 @@ import (
 	"backend/pkg/models/lobby"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
-	"log"
 )
 
 func Create(context *models.Context) error {
@@ -72,14 +71,9 @@ func Get(context *models.Context) error {
 		Players: players,
 		LobbyId: *context.LobbyId(),
 	}}
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Get)
 
-	bytes, err := res.Encode()
-
-	if err != nil {
-		return err
-	}
-
-	return ws.Send(context, bytes)
+	return ws.Send(context, route, res)
 }
 
 func NameChange(context *models.Context, name *string) error {
@@ -94,35 +88,21 @@ func NameChange(context *models.Context, name *string) error {
 
 func sendLobbyJoin(context *models.Context) error {
 	res := lobby.JoinResponse{LobbyId: *context.LobbyId()}
-	bytes, err := res.Encode()
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
 
-	if err != nil {
-		return err
-	}
-
-	return ws.Send(context, bytes)
+	return ws.Send(context, route, res)
 }
 
 func onPlayerJoin(context *models.Context, player *lobby.Player) error {
 	response := lobby.PlayerJoinResponse{Player: *player}
-	bytes, err := response.Encode()
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
 
-	if err != nil {
-		log.Printf("onPlayerJoin error encoding response")
-		return err
-	}
-
-	return ws.SendToLobby(context, bytes, true)
+	return ws.SendToLobby(context, route, response, true)
 }
 
 func onPlayerNameChange(context *models.Context, player *lobby.Player) error {
 	response := lobby.NameChangeResponse{Player: *player}
-	bytes, err := response.Encode()
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.NameChanged)
 
-	if err != nil {
-		log.Printf("onPlayerNameChange error encoding response")
-		return err
-	}
-
-	return ws.SendToLobby(context, bytes, false)
+	return ws.SendToLobby(context, route, response, false)
 }

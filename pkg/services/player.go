@@ -42,13 +42,10 @@ func SetSession(context *models.Context) error {
 	}
 
 	//create response
-	msg, err := player.SessionResponse{SessionId: *context.SessionId()}.Encode()
+	res := player.SessionResponse{SessionId: *context.SessionId()}
+	route := models.NewRoute(&models.Service.Player, &player.Action.Server.SetSession)
 
-	if err != nil {
-		return err
-	}
-
-	return ws.Send(context, msg)
+	return ws.Send(context, route, res)
 }
 
 func DestroySession(context *models.Context) error {
