@@ -41,7 +41,7 @@ func SetLobbyName(context *models.Context, data *models.Data) error {
 	}
 
 	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.NameChanged)
-	return ws.SendToLobby(context, route, lobby.NameChangeResponse{Player: player}, false)
+	return ws.SendToLobby(context, route, lobby.NameChangeResponse{Player: player})
 }
 
 func join(context *models.Context, isAdmin bool) error {
@@ -56,7 +56,7 @@ func join(context *models.Context, isAdmin bool) error {
 	}
 
 	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
-	err = ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player}, true)
+	err = ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
 
 	if err != nil {
 		return err

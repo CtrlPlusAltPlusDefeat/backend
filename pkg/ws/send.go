@@ -31,7 +31,7 @@ func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 	})
 }
 
-func SendToLobby(context *models.Context, route *models.Route, message interface{}, excludeConnection bool) error {
+func SendToLobby(context *models.Context, route *models.Route, message interface{}) error {
 	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 
 	if err != nil {
@@ -39,10 +39,6 @@ func SendToLobby(context *models.Context, route *models.Route, message interface
 	}
 
 	for _, p := range players {
-		if excludeConnection && p.ConnectionId == *context.ConnectionId() {
-			continue
-		}
-
 		err = Send(context.ForConnection(&p.ConnectionId), route, message)
 
 		if err != nil {
@@ -101,7 +97,7 @@ func handleError(err error, id *string) error {
 	if err == nil {
 		return err
 	}
-	
+
 	if err != nil {
 		var serializationError *smithy.SerializationError
 		if errors.As(err, &serializationError) {
