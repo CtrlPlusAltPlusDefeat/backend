@@ -4,7 +4,6 @@ import (
 	"backend/pkg/db"
 	"backend/pkg/models"
 	"backend/pkg/ws"
-	"errors"
 )
 
 func ErrorCommunicateMiddleware(next Handler) Handler {
@@ -45,6 +44,7 @@ func LobbyMiddleware(next Handler) Handler {
 	return func(context *models.Context, data *models.Data) error {
 		req := lobbyId{}
 		err := data.DecodeTo(&req)
+
 		if err != nil {
 			return err
 		}
@@ -53,10 +53,6 @@ func LobbyMiddleware(next Handler) Handler {
 
 		if err != nil {
 			return err
-		}
-
-		if res.LobbyId == "" {
-			return errors.New("empty lobby id")
 		}
 
 		return next(context.ForLobby(&res.LobbyId), data)

@@ -3,6 +3,7 @@ package db
 import (
 	"backend/pkg/models/lobby"
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -28,6 +29,10 @@ func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
 	if err != nil {
 		log.Printf("Couldn't query %s table. Here's why: %v\n", l.table, err)
 		return result, err
+	}
+
+	if len(item.Item) == 0 {
+		return result, fmt.Errorf("lobby not found")
 	}
 
 	err = attributevalue.UnmarshalMap(item.Item, &result)
