@@ -45,11 +45,7 @@ func SetLobbyName(context *models.Context, data *models.Data) error {
 }
 
 func join(context *models.Context, isAdmin bool) error {
-	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
-
-	if err != nil {
-		player, err = db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
-	}
+	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
 
 	if err != nil {
 		return err

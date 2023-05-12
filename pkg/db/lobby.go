@@ -47,7 +47,8 @@ func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
 
 func (l *lobbydb) Add(lobbyId *string) error {
 	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
-		TableName: aws.String(l.table), Item: map[string]types.AttributeValue{
+		TableName: aws.String(l.table),
+		Item: map[string]types.AttributeValue{
 			"LobbyId": &types.AttributeValueMemberS{Value: *lobbyId},
 		},
 	})
