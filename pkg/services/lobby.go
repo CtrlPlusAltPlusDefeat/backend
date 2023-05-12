@@ -51,19 +51,19 @@ func join(context *models.Context, isAdmin bool) error {
 		return err
 	}
 
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
-	err = ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
-
-	if err != nil {
-		return err
-	}
-
 	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 
 	if err != nil {
 		return err
 	}
 
-	route = models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
-	return ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, LobbyId: *context.LobbyId()}})
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
+	err = ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, LobbyId: *context.LobbyId()}})
+
+	if err != nil {
+		return err
+	}
+
+	route = models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
+	return ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
 }
