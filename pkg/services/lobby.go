@@ -9,21 +9,35 @@ import (
 )
 
 func CreateLobby(context *models.Context, data *models.Data) error {
-	id := uuid.New().String()
-
-	context = context.ForLobby(&id)
-
-	err := db.Lobby.Add(context.LobbyId())
+	req := lobby.CreateAndJoinRequest{}
+	err := data.DecodeTo(&req)
 
 	if err != nil {
 		return err
 	}
 
-	return join(context, true)
+	id := uuid.New().String()
+
+	context = context.ForLobby(&id)
+
+	err = db.Lobby.Add(context.LobbyId())
+
+	if err != nil {
+		return err
+	}
+
+	return join(context, req.Name, true)
 }
 
 func JoinLobby(context *models.Context, data *models.Data) error {
-	return join(context, false)
+	req := lobby.CreateAndJoinRequest{}
+	err := data.DecodeTo(&req)
+
+	if err != nil {
+		return err
+	}
+
+	return join(context, req.Name, false)
 }
 
 func SetLobbyName(context *models.Context, data *models.Data) error {
@@ -44,8 +58,8 @@ func SetLobbyName(context *models.Context, data *models.Data) error {
 	return ws.SendToLobby(context, route, lobby.NameChangeResponse{Player: player})
 }
 
-func join(context *models.Context, isAdmin bool) error {
-	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), isAdmin)
+func join(context *models.Context, name string, isAdmin bool) error {
+	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), name, isAdmin)
 
 	if err != nil {
 		return err
