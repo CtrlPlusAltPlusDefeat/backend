@@ -33,15 +33,17 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 			":Name":         &types.AttributeValueMemberS{Value: name},
 			":Points":       &types.AttributeValueMemberN{Value: "0"},
 			":IsAdmin":      &types.AttributeValueMemberBOOL{Value: isAdmin},
+			":IsOnline":     &types.AttributeValueMemberBOOL{Value: true},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#ConnectionId": "ConnectionId",
 			"#IsAdmin":      "IsAdmin",
+			"#IsOnline":     "IsOnline",
 			"#Id":           "Id",
 			"#Name":         "Name",
 			"#Points":       "Points",
 		},
-		UpdateExpression: aws.String("set #ConnectionId=:ConnectionId, #IsAdmin=:IsAdmin, #Id=if_not_exists(#Id, :Id), #Name=if_not_exists(#Name, :Name), #Points=if_not_exists(#Points, :Points)"),
+		UpdateExpression: aws.String("set #ConnectionId=:ConnectionId, #IsAdmin=:IsAdmin, #IsOnline=:IsOnline, #Id=if_not_exists(#Id, :Id), #Name=if_not_exists(#Name, :Name), #Points=if_not_exists(#Points, :Points)"),
 		ReturnValues:     types.ReturnValueAllNew,
 	})
 
@@ -55,19 +57,6 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 		log.Printf("Error unmarshalling dyanmodb map: %s", err)
 	}
 	return player, err
-}
-
-func (l *lobbyplayer) Remove(lobbyId *string, sessionId *string) error {
-
-	_, err := DynamoDb.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
-		TableName: aws.String(l.table), Key: map[string]types.AttributeValue{
-			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
-			"SessionId": &types.AttributeValueMemberS{Value: *sessionId},
-		}})
-	if err != nil {
-		log.Printf("Couldn't delete %s from %s table. Here's why: %v\n", lobbyId, l.table, err)
-	}
-	return err
 }
 
 func (l *lobbyplayer) GetPlayers(lobbyId *string) ([]lobby.Player, error) {
@@ -119,9 +108,9 @@ func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (lobby.Player, err
 	return player, nil
 }
 
-// UpdateConnectionId update a lobby players connectionId using the sessionId and lobbyId
-func (l *lobbyplayer) UpdateConnectionId(lobbyId *string, sessionId *string, connectionId *string) (lobby.Player, error) {
+func (l *lobbyplayer) UpdateOnline(lobbyId *string, sessionId *string, online bool) (lobby.Player, error) {
 	var player lobby.Player
+
 	item, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(l.table),
 		Key: map[string]types.AttributeValue{
@@ -129,22 +118,25 @@ func (l *lobbyplayer) UpdateConnectionId(lobbyId *string, sessionId *string, con
 			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
+			":IsOnline": &types.AttributeValueMemberBOOL{Value: online},
 		},
 		ExpressionAttributeNames: map[string]string{
-			"#ConnectionId": "ConnectionId",
+			"#IsOnline": "IsOnline",
 		},
-		UpdateExpression: aws.String("set #ConnectionId=:ConnectionId"),
+		UpdateExpression: aws.String("set #IsOnline=:IsOnline"),
 		ReturnValues:     types.ReturnValueAllNew,
 	})
+
 	if err != nil {
-		log.Printf("Couldn't update %s in %s table. Here's why: %v\n", *sessionId, l.table, err)
 		return player, err
 	}
+
 	err = attributevalue.UnmarshalMap(item.Attributes, &player)
+
 	if err != nil {
-		log.Printf("Error unmarshalling lobby.Player: %s", err)
+		log.Printf("Error unmarshalling dyanmodb map: %s", err)
 	}
+
 	return player, err
 }
 

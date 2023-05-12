@@ -8,6 +8,7 @@ type Player struct {
 	Name         string `dynamodbav:"Name" json:"name"`
 	Points       int32  `dynamodbav:"Points" json:"points"`
 	IsAdmin      bool   `dynamodbav:"IsAdmin" json:"isAdmin"`
+	IsOnline     bool   `dynamodbav:"IsOnline" json:"isOnline"`
 }
 
 type Details struct {
