@@ -42,7 +42,7 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 			"#Points":       "Points",
 		},
 		UpdateExpression: aws.String("set #ConnectionId=:ConnectionId, #IsAdmin=:IsAdmin, #Id=if_not_exists(#Id, :Id), #Name=if_not_exists(#Name, :Name), #Points=if_not_exists(#Points, :Points)"),
-		ReturnValues:     types.ReturnValueAllOld,
+		ReturnValues:     types.ReturnValueAllNew,
 	})
 
 	if err != nil {
