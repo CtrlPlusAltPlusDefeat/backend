@@ -18,7 +18,7 @@ type lobbyplayer struct {
 
 var LobbyPlayer = lobbyplayer{table: "LobbyPlayer"}
 
-func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *string, isAdmin bool) (lobby.Player, error) {
+func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *string, name string, isAdmin bool) (lobby.Player, error) {
 	var player lobby.Player
 
 	item, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
@@ -30,7 +30,7 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
 			":Id":           &types.AttributeValueMemberS{Value: uuid.New().String()},
-			":Name":         &types.AttributeValueMemberS{Value: ""},
+			":Name":         &types.AttributeValueMemberS{Value: name},
 			":Points":       &types.AttributeValueMemberN{Value: "0"},
 			":IsAdmin":      &types.AttributeValueMemberBOOL{Value: isAdmin},
 		},
