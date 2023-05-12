@@ -65,9 +65,5 @@ func join(context *models.Context, isAdmin bool) error {
 	}
 
 	route = models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
-	err = ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
-
-	if err != nil {
-		return err
-	}
+	return ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
 }
