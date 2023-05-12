@@ -40,24 +40,6 @@ func JoinLobby(context *models.Context, data *models.Data) error {
 	return join(context, req.Name, false)
 }
 
-func SetLobbyName(context *models.Context, data *models.Data) error {
-	req := lobby.SetNameRequest{}
-	err := data.DecodeTo(&req)
-
-	if err != nil {
-		return err
-	}
-
-	player, err := db.LobbyPlayer.UpdateName(context.LobbyId(), context.SessionId(), &req.Text)
-
-	if err != nil {
-		return err
-	}
-
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.NameChanged)
-	return ws.SendToLobby(context, route, lobby.NameChangeResponse{Player: player})
-}
-
 func join(context *models.Context, name string, isAdmin bool) error {
 	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), name, isAdmin)
 
@@ -80,4 +62,33 @@ func join(context *models.Context, name string, isAdmin bool) error {
 
 	route = models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
 	return ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
+}
+
+func LeaveLobby(context *models.Context, data *models.Data) error {
+	player, err := db.LobbyPlayer.UpdateOnline(context.LobbyId(), context.SessionId(), false)
+
+	if err != nil {
+		return err
+	}
+
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerLeft)
+	return ws.SendToLobby(context, route, lobby.PlayerLeftResponse{Player: player})
+}
+
+func SetLobbyName(context *models.Context, data *models.Data) error {
+	req := lobby.SetNameRequest{}
+	err := data.DecodeTo(&req)
+
+	if err != nil {
+		return err
+	}
+
+	player, err := db.LobbyPlayer.UpdateName(context.LobbyId(), context.SessionId(), &req.Text)
+
+	if err != nil {
+		return err
+	}
+
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.NameChanged)
+	return ws.SendToLobby(context, route, lobby.NameChangeResponse{Player: player})
 }
