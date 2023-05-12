@@ -21,18 +21,30 @@ var LobbyPlayer = lobbyplayer{table: "LobbyPlayer"}
 func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *string, isAdmin bool) (lobby.Player, error) {
 	var player lobby.Player
 
-	item, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
-		TableName: aws.String(l.table), Item: map[string]types.AttributeValue{
-			"LobbyId":      &types.AttributeValueMemberS{Value: *lobbyId},
-			"SessionId":    &types.AttributeValueMemberS{Value: *sessionId},
-			"ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
-			"Id":           &types.AttributeValueMemberS{Value: uuid.New().String()},
-			"Name":         &types.AttributeValueMemberS{Value: ""},
-			"Points":       &types.AttributeValueMemberN{Value: "0"},
-			"IsAdmin":      &types.AttributeValueMemberBOOL{Value: isAdmin},
+	item, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(l.table),
+		Key: map[string]types.AttributeValue{
+			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
+			"SessionId": &types.AttributeValueMemberS{Value: *sessionId},
 		},
-		ReturnValues: types.ReturnValueAllOld,
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":ConnectionId": &types.AttributeValueMemberS{Value: *connectionId},
+			":Id":           &types.AttributeValueMemberS{Value: uuid.New().String()},
+			":Name":         &types.AttributeValueMemberS{Value: ""},
+			":Points":       &types.AttributeValueMemberN{Value: "0"},
+			":IsAdmin":      &types.AttributeValueMemberBOOL{Value: isAdmin},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#ConnectionId": "ConnectionId",
+			"#IsAdmin":      "IsAdmin",
+			"#Id":           "Id",
+			"#Name":         "Name",
+			"#Points":       "Points",
+		},
+		UpdateExpression: aws.String("set #ConnectionId=:ConnectionId, #IsAdmin=:IsAdmin, #Id=if_not_exists(#Id, :Id), #Name=if_not_exists(#Name, :Name), #Points=if_not_exists(#Points, :Points)"),
+		ReturnValues:     types.ReturnValueAllOld,
 	})
+
 	if err != nil {
 		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobbyId, l.table, err)
 	}
