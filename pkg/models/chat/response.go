@@ -1,6 +1,11 @@
 package chat
 
-type MessageResponse struct {
-	Text     string `json:"text"`
-	PlayerId string `json:"playerId"`
+type SendChatResponse struct {
+	Text      string `json:"text"`
+	Timestamp int64  `json:"timestamp"`
+	PlayerId  string `json:"playerId"`
+}
+
+type LoadChatResponse struct {
+	Messages []SendChatResponse `json:"messages"`
 }

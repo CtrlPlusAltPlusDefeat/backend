@@ -5,6 +5,7 @@ type clientAction struct {
 }
 type serverAction struct {
 	Receive string
+	Load    string
 }
 
 type chatAction struct {
@@ -18,5 +19,6 @@ var Actions = chatAction{
 	},
 	Server: serverAction{
 		Receive: "receive",
+		Load:    "load",
 	},
 }

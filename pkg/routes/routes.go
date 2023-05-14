@@ -23,9 +23,7 @@ func Configure() {
 	add("lobby|join", services.JoinLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("lobby|leave", services.LeaveLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
-
-	// TODO Remove once FE has switched to providing name on create / join
-	add("lobby|set-name", services.SetLobbyName, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {

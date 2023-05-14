@@ -8,7 +8,7 @@ import (
 )
 
 func SendChat(context *models.Context, data *models.Data) error {
-	req := chat.MessageRequest{}
+	req := chat.SendChatRequest{}
 	err := data.DecodeTo(&req)
 
 	if err != nil {
@@ -21,8 +21,44 @@ func SendChat(context *models.Context, data *models.Data) error {
 		return err
 	}
 
+	c, err := db.LobbyChat.Add(context.LobbyId(), &sender.Id, &req.Text)
+
+	if err != nil {
+		return err
+	}
+
 	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Receive)
-	err = ws.SendToLobby(context, route, chat.MessageResponse{Text: req.Text, PlayerId: sender.Id})
+	err = ws.SendToLobby(context, route, chat.SendChatResponse{Text: c.Message, Timestamp: c.Timestamp, PlayerId: c.PlayerId})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LoadChat(context *models.Context, data *models.Data) error {
+	req := chat.LoadChatRequest{}
+	err := data.DecodeTo(&req)
+
+	if err != nil {
+		return err
+	}
+
+	c, err := db.LobbyChat.Get(context.LobbyId(), req.Timestamp)
+
+	if err != nil {
+		return err
+	}
+
+	response := chat.LoadChatResponse{}
+
+	for _, item := range c {
+		response.Messages = append(response.Messages, chat.SendChatResponse{Text: item.Message, Timestamp: item.Timestamp, PlayerId: item.PlayerId})
+	}
+
+	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Load)
+	err = ws.Send(context, route, response)
 
 	if err != nil {
 		return err
