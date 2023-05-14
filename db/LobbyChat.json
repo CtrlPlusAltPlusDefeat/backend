@@ -16,8 +16,8 @@
       "AttributeType": "S"
     },
     {
-      "AttributeName": "SessionId",
-      "AttributeType": "S"
+      "AttributeName": "Timestamp",
+      "AttributeType": "N"
     }
   ],
   "ProvisionedThroughput": {
