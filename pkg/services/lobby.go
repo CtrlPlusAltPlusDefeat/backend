@@ -53,7 +53,7 @@ func join(context *models.Context, name string, isAdmin bool) error {
 		return err
 	}
 
-	chats, err := db.LobbyChat.Get(context.LobbyId())
+	chats, err := db.LobbyChat.Get(context.LobbyId(), 0)
 
 	if err != nil {
 		return err

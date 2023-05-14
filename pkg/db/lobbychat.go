@@ -44,15 +44,19 @@ func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (cha
 	return c, err
 }
 
-func (l *lobbychat) Get(lobbyId *string) ([]chat.Chat, error) {
+func (l *lobbychat) Get(lobbyId *string, timestamp int64) ([]chat.Chat, error) {
 	var chats []chat.Chat
+
+	if timestamp == 0 {
+		timestamp = time.Now().Unix()
+	}
 
 	query, err := DynamoDb.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String(l.table),
 		KeyConditionExpression: aws.String("LobbyId = :LobbyId AND Timestamp >= :Timestamp"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
-			":Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(time.Now().Unix(), 10)},
+			":Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(timestamp, 10)},
 		},
 		ScanIndexForward: aws.Bool(false),
 		Limit:            aws.Int32(50),
