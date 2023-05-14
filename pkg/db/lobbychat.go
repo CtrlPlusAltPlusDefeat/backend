@@ -19,28 +19,28 @@ type lobbychat struct {
 var LobbyChat = lobbychat{table: "LobbyChat"}
 
 func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (chat.Chat, error) {
-	var c chat.Chat
+	c := chat.Chat{
+		Message:   *message,
+		Timestamp: time.Now().Unix(),
+		PlayerId:  *playerId,
+		LobbyId:   *lobbyId,
+	}
 
-	item, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
-			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
-			"PlayerId":  &types.AttributeValueMemberS{Value: *playerId},
-			"Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(time.Now().Unix(), 10)},
-			"Message":   &types.AttributeValueMemberS{Value: *message},
+			"LobbyId":   &types.AttributeValueMemberS{Value: c.LobbyId},
+			"PlayerId":  &types.AttributeValueMemberS{Value: c.PlayerId},
+			"Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(c.Timestamp, 10)},
+			"Message":   &types.AttributeValueMemberS{Value: c.Message},
 		},
-		ReturnValues: types.ReturnValueAllOld,
+		ReturnValues: types.ReturnValueNone,
 	})
 
 	if err != nil {
 		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobbyId, l.table, err)
 	}
 
-	err = attributevalue.UnmarshalMap(item.Attributes, &c)
-
-	if err != nil {
-		log.Printf("Error unmarshalling dyanmodb map: %s", err)
-	}
 	return c, err
 }
 
