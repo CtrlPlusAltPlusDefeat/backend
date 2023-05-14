@@ -29,7 +29,7 @@ func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (cha
 			"Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(time.Now().Unix(), 10)},
 			"Message":   &types.AttributeValueMemberS{Value: *message},
 		},
-		ReturnValues: types.ReturnValueAllNew,
+		ReturnValues: types.ReturnValueAllOld,
 	})
 
 	if err != nil {
