@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"log"
+	"strconv"
+	"time"
 )
 
 type lobbychat struct {
@@ -17,12 +19,13 @@ type lobbychat struct {
 var LobbyChat = lobbychat{table: "LobbyChat"}
 
 func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) error {
+
 	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
 			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
 			"PlayerId":  &types.AttributeValueMemberS{Value: *playerId},
-			"Timestamp": &types.AttributeValueMemberN{Value: *sessionId},
+			"Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(time.Now().Unix(), 10)},
 			"Message":   &types.AttributeValueMemberS{Value: *message},
 		},
 		ReturnValues: types.ReturnValueAllNew,
@@ -36,9 +39,10 @@ func (l *lobbychat) Get(lobbyId *string) ([]chat.Chat, error) {
 
 	query, err := DynamoDb.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String(l.table),
-		KeyConditionExpression: aws.String("LobbyId=:LobbyId"),
+		KeyConditionExpression: aws.String("LobbyId = :LobbyId AND Timestamp >= :Timestamp"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":LobbyId": &types.AttributeValueMemberS{Value: *lobbyId},
+			":LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
+			":Timestamp": &types.AttributeValueMemberN{Value: strconv.FormatInt(time.Now().Unix(), 10)},
 		},
 		ScanIndexForward: aws.Bool(false),
 		Limit:            aws.Int32(50),
