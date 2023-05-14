@@ -1,6 +1,7 @@
 package chat
 
 type MessageResponse struct {
-	Text     string `json:"text"`
-	PlayerId string `json:"playerId"`
+	Text      string `json:"text"`
+	Timestamp string `json:"timestamp"`
+	PlayerId  string `json:"playerId"`
 }

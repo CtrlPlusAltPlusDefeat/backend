@@ -21,14 +21,14 @@ func SendChat(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	err = db.LobbyChat.Add(context.LobbyId(), &sender.Id, &req.Text)
+	c, err := db.LobbyChat.Add(context.LobbyId(), &sender.Id, &req.Text)
 
 	if err != nil {
 		return err
 	}
 
 	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Receive)
-	err = ws.SendToLobby(context, route, chat.MessageResponse{Text: req.Text, PlayerId: sender.Id})
+	err = ws.SendToLobby(context, route, chat.MessageResponse{Text: c.Message, Timestamp: c.Timestamp, PlayerId: c.PlayerId})
 
 	if err != nil {
 		return err

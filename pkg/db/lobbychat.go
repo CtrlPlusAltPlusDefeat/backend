@@ -18,9 +18,10 @@ type lobbychat struct {
 
 var LobbyChat = lobbychat{table: "LobbyChat"}
 
-func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) error {
+func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (chat.Chat, error) {
+	var c chat.Chat
 
-	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	item, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
 			"LobbyId":   &types.AttributeValueMemberS{Value: *lobbyId},
@@ -31,7 +32,16 @@ func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) erro
 		ReturnValues: types.ReturnValueAllNew,
 	})
 
-	return err
+	if err != nil {
+		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobbyId, l.table, err)
+	}
+
+	err = attributevalue.UnmarshalMap(item.Attributes, &c)
+
+	if err != nil {
+		log.Printf("Error unmarshalling dyanmodb map: %s", err)
+	}
+	return c, err
 }
 
 func (l *lobbychat) Get(lobbyId *string) ([]chat.Chat, error) {
