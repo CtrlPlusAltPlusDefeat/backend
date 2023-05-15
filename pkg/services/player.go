@@ -79,7 +79,7 @@ func destroySession(context *models.Context) error {
 	log.Printf("Destroying %d sessions", len(connections))
 
 	for _, connection := range connections {
-		_ = ws.Disconnect(&connection.ConnectionId)
+		_ = ws.Disconnect(context.ForConnection(&connection.ConnectionId))
 	}
 
 	return nil

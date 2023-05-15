@@ -2,13 +2,19 @@ package ws
 
 import (
 	"backend/pkg/db"
+	"backend/pkg/models"
 	"log"
 )
 
-func Disconnect(id *string) error {
-	// todo we want to notify lobby that this player has disconnected
+var OnLeaveLobby func(context *models.Context, data *models.Data) error
 
-	return deleteConnection(id)
+func Disconnect(context *models.Context) error {
+	// todo we want to notify lobby that this player has disconnected
+	err := OnLeaveLobby(context, nil)
+	if err != nil {
+		log.Printf("Error notifying lobby: %s", err.Error())
+	}
+	return deleteConnection(context.ConnectionId())
 }
 
 // handle disconnecting connections

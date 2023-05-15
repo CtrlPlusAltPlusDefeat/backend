@@ -69,7 +69,7 @@ func Send(context *models.Context, route *models.Route, message interface{}) err
 	// else we just use apigateway
 	local := os.Getenv("LOCAL_WEBSOCKET_SERVER")
 	if local == "1" {
-		return writeMessage(context.ConnectionId(), data)
+		return writeMessage(context, data)
 	}
 
 	//use apigateway when not local
@@ -77,19 +77,19 @@ func Send(context *models.Context, route *models.Route, message interface{}) err
 		Data:         data,
 		ConnectionId: context.ConnectionId(),
 	})
-	return handleError(err, context.ConnectionId())
+	return handleError(err, context)
 }
 
 // writeMessage this is only used when running locally
-func writeMessage(connectionId *string, data []byte) error {
-	connection := LocalConnections[*connectionId]
+func writeMessage(context *models.Context, data []byte) error {
+	connection := LocalConnections[*context.ConnectionId()]
 	if connection == nil {
-		return Disconnect(connectionId)
+		return Disconnect(context)
 	}
 	err := connection.WriteMessage(1, data)
 	isClosed := websocket.IsCloseError(err)
 	if isClosed {
-		return Disconnect(connectionId)
+		return Disconnect(context)
 	}
 	return err
 }
@@ -97,7 +97,7 @@ func writeMessage(connectionId *string, data []byte) error {
 // handleError is a convenience function for taking action for a given error value. The function handles nil errors as a
 // convenience to the caller. If a nil error is provided, the error is immediately returned. The function may return an
 // error from the handling action, such as deleting the id from the cache, if that action results in an error.
-func handleError(err error, id *string) error {
+func handleError(err error, context *models.Context) error {
 	if err == nil {
 		return err
 	}
@@ -105,16 +105,16 @@ func handleError(err error, id *string) error {
 	if err != nil {
 		var serializationError *smithy.SerializationError
 		if errors.As(err, &serializationError) {
-			log.Printf("SerializationError, delete stale connection details from cache: %s", id)
-			return Disconnect(id)
+			log.Printf("SerializationError, delete stale connection details from cache: %s", *context.ConnectionId())
+			return Disconnect(context)
 		}
 	}
 
 	if err != nil {
 		var gone *types.GoneException
 		if errors.As(err, &gone) {
-			log.Printf("GoneException, delete stale connection details from cache: %s", id)
-			return Disconnect(id)
+			log.Printf("GoneException, delete stale connection details from cache: %s", *context.ConnectionId())
+			return Disconnect(context)
 		}
 	}
 	return err
