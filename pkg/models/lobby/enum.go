@@ -26,7 +26,7 @@ var Action = lobbyAction{
 		SetName: "set-name",
 	},
 	Server: serverAction{
-		Joined:       "joined",
+		Joined:       "join",
 		PlayerJoined: "player-joined",
 		PlayerLeft:   "player-left",
 		NameChanged:  "name-change",
