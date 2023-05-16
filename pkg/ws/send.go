@@ -84,12 +84,12 @@ func Send(context *models.Context, route *models.Route, message interface{}) err
 func writeMessage(connectionId *string, data []byte) error {
 	connection := LocalConnections[*connectionId]
 	if connection == nil {
-		return Disconnect(connectionId)
+		return db.Connection.Remove(connectionId)
 	}
 	err := connection.WriteMessage(1, data)
 	isClosed := websocket.IsCloseError(err)
 	if isClosed {
-		return Disconnect(connectionId)
+		return db.Connection.Remove(connectionId)
 	}
 	return err
 }
@@ -106,7 +106,7 @@ func handleError(err error, id *string) error {
 		var serializationError *smithy.SerializationError
 		if errors.As(err, &serializationError) {
 			log.Printf("SerializationError, delete stale connection details from cache: %s", id)
-			return Disconnect(id)
+			return db.Connection.Remove(id)
 		}
 	}
 
@@ -114,7 +114,7 @@ func handleError(err error, id *string) error {
 		var gone *types.GoneException
 		if errors.As(err, &gone) {
 			log.Printf("GoneException, delete stale connection details from cache: %s", id)
-			return Disconnect(id)
+			return db.Connection.Remove(id)
 		}
 	}
 	return err

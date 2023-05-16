@@ -139,3 +139,38 @@ func (l *lobbyplayer) UpdateOnline(lobbyId *string, sessionId *string, online bo
 
 	return p, err
 }
+
+// GetLobbiesBySessionId returns all lobbies that a players sessionId is in
+func (l *lobbyplayer) GetLobbiesBySessionId(sessionId *string) ([]player.Player, error) {
+	var lobbyPlayers []player.Player
+
+	output, err := DynamoDb.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:              aws.String(l.table),
+		IndexName:              aws.String("SessionIdIndex"),
+		KeyConditionExpression: aws.String("#sessionId = :v_sessionId"),
+		ExpressionAttributeNames: map[string]string{
+			"#sessionId": "SessionId",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":v_sessionId": &types.AttributeValueMemberS{Value: *sessionId},
+		}})
+
+	if err != nil {
+		log.Printf("Couldn't get %v from the table %s. Here's why: %v\n", sessionId, l.table, err)
+		return lobbyPlayers, err
+	}
+
+	for _, item := range output.Items {
+		var p player.Player
+		err = attributevalue.UnmarshalMap(item, &p)
+		if err != nil {
+			log.Printf("Error unmarshalling dyanmodb map: %s", err)
+		}
+		lobbyPlayers = append(lobbyPlayers, p)
+	}
+
+	if err != nil {
+		log.Printf("Couldn't Query table %s. Here's why: %v\n", l.table, err)
+	}
+	return lobbyPlayers, err
+}
