@@ -27,7 +27,7 @@ jobs:
       - name: Build
         run: |
           go mod tidy
-          go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
 
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
