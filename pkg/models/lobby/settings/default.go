@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 )
 
+type Encoded string
+
 type BaseSettings struct {
 	GameId     game.Id `json:"gameId"`
 	MaxPlayers int     `json:"maxPlayers"`
@@ -17,15 +19,20 @@ func GetDefaultSettings(maxPlayers int) *BaseSettings {
 	}
 }
 
-func (s BaseSettings) Encode() ([]byte, error) {
-	return json.Marshal(s)
+func (s BaseSettings) Encode() (Encoded, error) {
+	temp, err := json.Marshal(s)
+	return Encoded(temp), err
 }
 
-func GetType(str string) (game.Id, error) {
+func (str *Encoded) GetGameId() (game.Id, error) {
 	settings := BaseSettings{}
-	err := json.Unmarshal([]byte(str), &settings)
+	err := json.Unmarshal([]byte(*str), &settings)
 	if err != nil {
 		return 0, err
 	}
 	return settings.GameId, nil
+}
+
+func (str *Encoded) String() string {
+	return string(*str)
 }

@@ -22,7 +22,9 @@ func Configure() {
 	add("lobby|create", services.CreateLobby, ErrorCommunicateMiddleware, SessionMiddleware)
 	add("lobby|join", services.JoinLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("lobby|leave", services.LeaveLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("lobby|start-game", services.StartGame, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 }
 

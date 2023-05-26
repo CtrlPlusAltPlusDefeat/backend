@@ -11,7 +11,6 @@ import (
 
 func GetConfig() aws.Config {
 	dbUrl := os.Getenv("DYNAMO_DB_URL")
-
 	if len(dbUrl) > 0 {
 		return getLocalConfig()
 	}

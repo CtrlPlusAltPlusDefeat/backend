@@ -1,0 +1,27 @@
+{
+  "TableName": "GameSession",
+  "KeySchema": [
+    {
+      "AttributeName": "LobbyId",
+      "KeyType": "HASH"
+    },
+    {
+      "AttributeName": "GameSessionId",
+      "KeyType": "Range"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "LobbyId",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "GameSessionId",
+      "AttributeType": "S"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 2,
+    "WriteCapacityUnits": 2
+  }
+}

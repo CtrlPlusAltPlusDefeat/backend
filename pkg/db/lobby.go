@@ -45,6 +45,32 @@ func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
 	return result, nil
 }
 
+func (l *lobbydb) Update(lobby lobby.Lobby) error {
+	_, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(l.table),
+		Key: map[string]types.AttributeValue{
+			"LobbyId": &types.AttributeValueMemberS{Value: lobby.LobbyId},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#Settings": "Settings",
+			"#InGame":   "InGame",
+			"#GameId":   "GameId",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":Settings": &types.AttributeValueMemberS{Value: lobby.Settings.String()},
+			":InGame":   &types.AttributeValueMemberBOOL{Value: lobby.InGame},
+			":GameId":   &types.AttributeValueMemberS{Value: lobby.GameId},
+		},
+		UpdateExpression: aws.String("set #Settings=:Settings, #InGame=:InGame, #GameId=:GameId"),
+	})
+
+	if err != nil {
+		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", lobby.LobbyId, l.table, err)
+	}
+
+	return err
+}
+
 func (l *lobbydb) Add(lobbyId *string) error {
 
 	lobbySettings, err := settings.GetDefaultSettings(12).Encode()
@@ -56,7 +82,9 @@ func (l *lobbydb) Add(lobbyId *string) error {
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
 			"LobbyId":  &types.AttributeValueMemberS{Value: *lobbyId},
-			"Settings": &types.AttributeValueMemberS{Value: string(lobbySettings)},
+			"Settings": &types.AttributeValueMemberS{Value: lobbySettings.String()},
+			"InGame":   &types.AttributeValueMemberBOOL{Value: false},
+			"GameId":   &types.AttributeValueMemberS{Value: ""},
 		},
 	})
 
