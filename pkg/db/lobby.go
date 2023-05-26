@@ -2,6 +2,7 @@ package db
 
 import (
 	"backend/pkg/models/lobby"
+	"backend/pkg/models/lobby/settings"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,7 +37,6 @@ func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
 	}
 
 	err = attributevalue.UnmarshalMap(item.Item, &result)
-
 	if err != nil {
 		log.Printf("Error unmarshalling lobby.Lobby: %s", err)
 		return result, err
@@ -46,10 +46,17 @@ func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
 }
 
 func (l *lobbydb) Add(lobbyId *string) error {
-	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
+
+	lobbySettings, err := settings.GetDefaultSettings(12).Encode()
+	if err != nil {
+		return err
+	}
+
+	_, err = DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
-			"LobbyId": &types.AttributeValueMemberS{Value: *lobbyId},
+			"LobbyId":  &types.AttributeValueMemberS{Value: *lobbyId},
+			"Settings": &types.AttributeValueMemberS{Value: string(lobbySettings)},
 		},
 	})
 

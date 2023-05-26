@@ -53,6 +53,6 @@ func LobbyMiddleware(next Handler) Handler {
 			return err
 		}
 
-		return next(context.ForLobby(&res.LobbyId), data)
+		return next(context.ForLobby(&res), data)
 	}
 }
