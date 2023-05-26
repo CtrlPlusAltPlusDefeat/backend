@@ -6,6 +6,7 @@ import (
 	"backend/pkg/models/lobby"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
+	"log"
 )
 
 func CreateLobby(context *models.Context, data *models.Data) error {
@@ -53,14 +54,8 @@ func join(context *models.Context, name string, isAdmin bool) error {
 		return err
 	}
 
-	chats, err := db.LobbyChat.Get(context.LobbyId(), 0)
-
-	if err != nil {
-		return err
-	}
-
 	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
-	err = ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, Chats: chats, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings}})
+	err = ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameId}})
 
 	if err != nil {
 		return err
@@ -79,4 +74,34 @@ func LeaveLobby(context *models.Context, data *models.Data) error {
 
 	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerLeft)
 	return ws.SendToLobby(context, route, lobby.PlayerLeftResponse{Player: player})
+}
+
+func StartGame(context *models.Context, data *models.Data) error {
+	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
+	gameSessionId := uuid.New().String()
+
+	gameTypeId, err := context.Lobby().Settings.GetGameId()
+	if err != nil {
+		return err
+	}
+
+	gameSession, err := db.GameSession.Add(context.LobbyId(), &gameSessionId, gameTypeId)
+	if err != nil {
+		return err
+	}
+
+	updateLobby := lobby.Lobby{
+		LobbyId:  *context.LobbyId(),
+		Settings: context.Lobby().Settings,
+		InGame:   true,
+		GameId:   gameSession.GameSessionId,
+	}
+
+	err = db.Lobby.Update(updateLobby)
+	if err != nil {
+		return err
+	}
+
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.StartGame)
+	return ws.SendToLobby(context, route, updateLobby)
 }

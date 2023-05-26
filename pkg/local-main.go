@@ -23,17 +23,19 @@ var upgrader = websocket.Upgrader{
 }
 
 func init() {
-	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
-	db.DynamoDb = dbClient
-	routes.Configure()
-
-}
-
-func main() {
 	// set environment variables
 	_ = os.Setenv("LOCAL_WEBSOCKET_SERVER", "1")
 	_ = os.Setenv("DYNAMO_DB_URL", "http://localhost:8000")
 
+	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
+	db.DynamoDb = dbClient
+	routes.Configure()
+}
+
+func main() {
+
+	dbUrl := os.Getenv("DYNAMO_DB_URL")
+	println("Using DYNAMO_DB_URL %s", dbUrl)
 	println("Listening on port http://localhost:8080")
 	//Listen for incoming connections.
 	http.HandleFunc("/", wsEndpoint)
