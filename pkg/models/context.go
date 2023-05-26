@@ -1,6 +1,7 @@
 package models
 
 import (
+	"backend/pkg/models/lobby"
 	"context"
 )
 
@@ -10,7 +11,7 @@ type Context struct {
 	connection *ConnectionContext
 
 	sessionId *string
-	lobbyId   *string
+	lobby     *lobby.Lobby
 }
 
 type ConnectionContext struct {
@@ -38,8 +39,11 @@ func (c Context) SessionId() *string {
 	return c.sessionId
 }
 
+func (c Context) Lobby() *lobby.Lobby {
+	return c.lobby
+}
 func (c Context) LobbyId() *string {
-	return c.lobbyId
+	return &c.lobby.LobbyId
 }
 
 func (c Context) ConnectionId() *string {
@@ -57,7 +61,7 @@ func (c Context) ConnectionPath() *string {
 func (c Context) ForConnection(id *string) *Context {
 	return &Context{
 		value:     c.value,
-		lobbyId:   c.lobbyId,
+		lobby:     c.lobby,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   id,
@@ -70,7 +74,7 @@ func (c Context) ForConnection(id *string) *Context {
 func (c Context) ForSession(id *string) *Context {
 	return &Context{
 		value:     c.value,
-		lobbyId:   c.lobbyId,
+		lobby:     c.lobby,
 		sessionId: id,
 		connection: &ConnectionContext{
 			id:   c.connection.id,
@@ -80,10 +84,10 @@ func (c Context) ForSession(id *string) *Context {
 	}
 }
 
-func (c Context) ForLobby(id *string) *Context {
+func (c Context) ForLobby(lobby *lobby.Lobby) *Context {
 	return &Context{
 		value:     c.value,
-		lobbyId:   id,
+		lobby:     lobby,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   c.connection.id,

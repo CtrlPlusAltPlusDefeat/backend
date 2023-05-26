@@ -15,6 +15,7 @@ dynamodb:
 	AWS_PAGER="" aws dynamodb create-table --cli-input-json file://./db/Connection.json --endpoint-url "http://localhost:8000"
 	AWS_PAGER="" aws dynamodb create-table --cli-input-json file://./db/Lobby.json --endpoint-url "http://localhost:8000"
 	AWS_PAGER="" aws dynamodb create-table --cli-input-json file://./db/LobbyPlayer.json --endpoint-url "http://localhost:8000"
+	AWS_PAGER="" aws dynamodb create-table --cli-input-json file://./db/LobbyChat.json --endpoint-url "http://localhost:8000"
 
 	echo "Tables:"
 	aws dynamodb list-tables --endpoint-url "http://localhost:8000"

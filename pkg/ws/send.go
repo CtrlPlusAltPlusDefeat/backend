@@ -32,7 +32,7 @@ func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 }
 
 func SendToLobby(context *models.Context, route *models.Route, message interface{}) error {
-	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
+	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
 
 	if err != nil {
 		return err

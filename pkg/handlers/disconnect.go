@@ -4,6 +4,7 @@ import (
 	apigateway "backend/pkg/aws-helpers/api-gateway"
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/models/lobby"
 	"backend/pkg/services"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
@@ -27,7 +28,7 @@ func DisconnectHandler(context context.Context, req *events.APIGatewayWebsocketP
 
 	for _, l := range lobbies {
 		if l.IsOnline {
-			con.ForLobby(&l.LobbyId)
+			con.ForLobby(&lobby.Lobby{LobbyId: l.LobbyId})
 			//error should already be outputted higher up
 			_ = services.LeaveLobby(con, data)
 		}

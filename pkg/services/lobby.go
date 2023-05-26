@@ -18,7 +18,7 @@ func CreateLobby(context *models.Context, data *models.Data) error {
 
 	id := uuid.New().String()
 
-	context = context.ForLobby(&id)
+	context = context.ForLobby(&lobby.Lobby{LobbyId: id})
 
 	err = db.Lobby.Add(context.LobbyId())
 
@@ -60,7 +60,7 @@ func join(context *models.Context, name string, isAdmin bool) error {
 	}
 
 	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
-	err = ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, Chats: chats, LobbyId: *context.LobbyId()}})
+	err = ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, Chats: chats, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings}})
 
 	if err != nil {
 		return err
