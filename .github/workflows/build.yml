@@ -26,6 +26,7 @@ jobs:
 
       - name: Build
         run: |
+          go mod tidy
           go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
 
       - name: Zip
