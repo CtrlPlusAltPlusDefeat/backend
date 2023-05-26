@@ -21,10 +21,6 @@ func (s BaseSettings) Encode() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-type LobbySettings interface {
-	BaseSettings | WordGuessSettings
-}
-
 func GetType(str string) (game.Id, error) {
 	settings := BaseSettings{}
 	err := json.Unmarshal([]byte(str), &settings)
