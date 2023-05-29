@@ -1,8 +1,8 @@
 package db
 
 import (
+	"backend/pkg/models/game/settings"
 	"backend/pkg/models/lobby"
-	"backend/pkg/models/lobby/settings"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -57,7 +57,7 @@ func (l *lobbydb) Update(lobby lobby.Lobby) error {
 			"#GameId":   "GameId",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":Settings": &types.AttributeValueMemberS{Value: lobby.Settings.String()},
+			":Settings": &types.AttributeValueMemberS{Value: string(lobby.Settings)},
 			":InGame":   &types.AttributeValueMemberBOOL{Value: lobby.InGame},
 			":GameId":   &types.AttributeValueMemberS{Value: lobby.GameId},
 		},
@@ -73,7 +73,7 @@ func (l *lobbydb) Update(lobby lobby.Lobby) error {
 
 func (l *lobbydb) Add(lobbyId *string) error {
 
-	lobbySettings, err := settings.GetDefaultSettings(12).Encode()
+	lobbySettings, err := settings.GetDefaultWordGuess().Encode()
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (l *lobbydb) Add(lobbyId *string) error {
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
 			"LobbyId":  &types.AttributeValueMemberS{Value: *lobbyId},
-			"Settings": &types.AttributeValueMemberS{Value: lobbySettings.String()},
+			"Settings": &types.AttributeValueMemberS{Value: string(lobbySettings)},
 			"InGame":   &types.AttributeValueMemberBOOL{Value: false},
 			"GameId":   &types.AttributeValueMemberS{Value: ""},
 		},
