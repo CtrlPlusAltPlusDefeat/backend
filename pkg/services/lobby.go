@@ -54,13 +54,13 @@ func join(context *models.Context, name string, isAdmin bool) error {
 		return err
 	}
 
-	err = ws.Send(context, context.Route(), models.GetResponse{Player: player, Lobby: models.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameId}})
+	err = ws.Send(context, models.JoinedLobby(), models.GetResponse{Player: player, Lobby: models.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameId}})
 
 	if err != nil {
 		return err
 	}
 
-	return ws.SendToLobby(context, models.PlayerJoin(), models.PlayerJoinResponse{Player: player})
+	return ws.SendToLobby(context, models.PlayerJoined(), models.PlayerJoinResponse{Player: player})
 }
 
 func LeaveLobby(context *models.Context, data *models.Data) error {

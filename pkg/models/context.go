@@ -66,6 +66,7 @@ func (c Context) ForConnection(id *string) *Context {
 	return &Context{
 		value:     c.value,
 		lobby:     c.lobby,
+		route:     c.route,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   id,
@@ -80,6 +81,7 @@ func (c Context) ForSession(id *string) *Context {
 		value:     c.value,
 		lobby:     c.lobby,
 		sessionId: id,
+		route:     c.route,
 		connection: &ConnectionContext{
 			id:   c.connection.id,
 			host: c.connection.host,
@@ -92,6 +94,7 @@ func (c Context) ForLobby(lobby *Lobby) *Context {
 	return &Context{
 		value:     c.value,
 		lobby:     lobby,
+		route:     c.route,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   c.connection.id,

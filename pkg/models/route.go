@@ -11,12 +11,6 @@ func NewRoute(service *string, action *string) *Route {
 		action:  action,
 	}
 }
-func newRoute(service string, action string) *Route {
-	return &Route{
-		service: &service,
-		action:  &action,
-	}
-}
 
 func (a *Route) Service() *string {
 	return a.service
@@ -31,13 +25,26 @@ func (a *Route) Value() string {
 }
 
 func PlayerLeave() *Route {
-	return newRoute("lobby", "player-left")
+	service := "lobby"
+	action := "player-left"
+	return NewRoute(&service, &action)
 }
 
-func PlayerJoin() *Route {
-	return newRoute("lobby", "player-join")
+func PlayerJoined() *Route {
+	service := "lobby"
+	action := "player-joined"
+	return NewRoute(&service, &action)
+}
+
+func JoinedLobby() *Route {
+	service := "lobby"
+	action := "join"
+	return NewRoute(&service, &action)
 }
 
 func SetSession() *Route {
-	return newRoute("player", "set-session")
+	service := "player"
+	action := "set-session"
+	return NewRoute(&service, &action)
+
 }
