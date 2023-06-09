@@ -47,10 +47,11 @@ func (g *gamedb) Get(lobbyId *string) (lobby.Lobby, error) {
 	return result, nil
 }
 
-func (g *gamedb) Add(lobbyId *string, gameSessionId *string, gameTypeId game.Id) (*game.Session, error) {
+func (g *gamedb) Add(lobbyId *string, gameSessionId *string, gameTypeId game.Id, teams []game.Team) (*game.Session, error) {
 	result := game.Session{
 		LobbyId: *lobbyId, GameSessionId: *gameSessionId, GameTypeId: gameTypeId,
 	}
+
 	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(g.table),
 		Item: map[string]types.AttributeValue{

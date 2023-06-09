@@ -1,7 +1,7 @@
 package lobby
 
 import (
-	"backend/pkg/models/lobby/settings"
+	"backend/pkg/models/game/settings"
 	"backend/pkg/models/player"
 )
 
