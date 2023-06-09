@@ -27,6 +27,5 @@ func RandomlyAssignTeams(lobby *lobby.Lobby, players []player.Player) ([]game.Te
 }
 
 func PlayerAction(context *models.Context, data *models.Data) error {
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.LoadGame)
-	return ws.SendToLobby(context, route, game.Session{})
+	return ws.SendToLobby(context, context.Route(), game.Session{})
 }

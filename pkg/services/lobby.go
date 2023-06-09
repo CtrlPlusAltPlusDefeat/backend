@@ -56,15 +56,13 @@ func join(context *models.Context, name string, isAdmin bool) error {
 		return err
 	}
 
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.Joined)
-	err = ws.Send(context, route, lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameId}})
+	err = ws.Send(context, context.Route(), lobby.GetResponse{Player: player, Lobby: lobby.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameId}})
 
 	if err != nil {
 		return err
 	}
 
-	route = models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerJoined)
-	return ws.SendToLobby(context, route, lobby.PlayerJoinResponse{Player: player})
+	return ws.SendToLobby(context, models.PlayerJoin(), lobby.PlayerJoinResponse{Player: player})
 }
 
 func LeaveLobby(context *models.Context, data *models.Data) error {
@@ -74,8 +72,7 @@ func LeaveLobby(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.PlayerLeft)
-	return ws.SendToLobby(context, route, lobby.PlayerLeftResponse{Player: player})
+	return ws.SendToLobby(context, models.PlayerLeave(), lobby.PlayerLeftResponse{Player: player})
 }
 
 // LoadGame - This function is called when the host clicks the start game button. It will move the lobby into the selected game in prematch state
@@ -113,6 +110,5 @@ func LoadGame(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.LoadGame)
-	return ws.SendToLobby(context, route, updateLobby)
+	return ws.SendToLobby(context, context.Route(), updateLobby)
 }

@@ -27,8 +27,7 @@ func SendChat(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Receive)
-	err = ws.SendToLobby(context, route, chat.SendChatResponse{Text: c.Message, Timestamp: c.Timestamp, PlayerId: c.PlayerId})
+	err = ws.SendToLobby(context, context.Route(), chat.SendChatResponse{Text: c.Message, Timestamp: c.Timestamp, PlayerId: c.PlayerId})
 
 	if err != nil {
 		return err
@@ -56,10 +55,7 @@ func LoadChat(context *models.Context, data *models.Data) error {
 	for _, item := range c {
 		response.Messages = append(response.Messages, chat.SendChatResponse{Text: item.Message, Timestamp: item.Timestamp, PlayerId: item.PlayerId})
 	}
-
-	route := models.NewRoute(&models.Service.Chat, &chat.Actions.Server.Load)
-	err = ws.Send(context, route, response)
-
+	err = ws.Send(context, context.Route(), response)
 	if err != nil {
 		return err
 	}

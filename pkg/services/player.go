@@ -61,12 +61,8 @@ func setSession(context *models.Context) error {
 			return err
 		}
 	}
-
-	//create response
 	res := player.SessionResponse{SessionId: *context.SessionId()}
-	route := models.NewRoute(&models.Service.Player, &player.Action.Server.SetSession)
-
-	return ws.Send(context, route, res)
+	return ws.Send(context, models.SetSession(), res)
 }
 
 func destroySession(context *models.Context) error {

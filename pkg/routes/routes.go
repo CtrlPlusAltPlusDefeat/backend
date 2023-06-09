@@ -41,14 +41,11 @@ func add(route string, handler Handler, middleware ...Middleware) {
 
 func Execute(context *models.Context, data *models.Data) {
 	route := data.Route().Value()
-
 	log.Printf("Beginning Invoking '%s'", route)
-
+	context = context.ForRoute(data.Route())
 	if handler, exists := handlers[route]; exists {
 		log.Printf("handler")
-
 		err := handler(context, data)
-
 		if err != nil {
 			log.Printf("Error Invoking '%s': %s", route, err)
 		}

@@ -6,8 +6,8 @@ import (
 )
 
 type Context struct {
-	value context.Context
-
+	value      context.Context
+	route      *Route
 	connection *ConnectionContext
 
 	sessionId *string
@@ -42,6 +42,11 @@ func (c Context) SessionId() *string {
 func (c Context) Lobby() *lobby.Lobby {
 	return c.lobby
 }
+
+func (c Context) Route() *Route {
+	return c.route
+}
+
 func (c Context) LobbyId() *string {
 	return &c.lobby.LobbyId
 }
@@ -88,6 +93,20 @@ func (c Context) ForLobby(lobby *lobby.Lobby) *Context {
 	return &Context{
 		value:     c.value,
 		lobby:     lobby,
+		sessionId: c.sessionId,
+		connection: &ConnectionContext{
+			id:   c.connection.id,
+			host: c.connection.host,
+			path: c.connection.path,
+		},
+	}
+}
+
+func (c Context) ForRoute(route *Route) *Context {
+	return &Context{
+		value:     c.value,
+		lobby:     c.lobby,
+		route:     route,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   c.connection.id,
