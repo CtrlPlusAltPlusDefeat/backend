@@ -80,12 +80,16 @@ func StartGame(context *models.Context, data *models.Data) error {
 	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
 	gameSessionId := uuid.New().String()
 
-	gameTypeId, err := context.Lobby().Settings.GetGameId()
+	settings, err := context.Lobby().Settings.Decode()
 	if err != nil {
 		return err
 	}
 
-	gameSession, err := db.GameSession.Add(context.LobbyId(), &gameSessionId, gameTypeId)
+	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
+
+	teams, err := RandomlyAssignTeams(context.Lobby(), players)
+
+	gameSession, err := db.GameSession.Add(context.LobbyId(), &gameSessionId, settings.GameId, teams)
 	if err != nil {
 		return err
 	}
