@@ -2,7 +2,7 @@ package db
 
 import (
 	"backend/pkg/models/game"
-	"backend/pkg/models/lobby"
+	"backend/pkg/models/game/state"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -19,53 +19,64 @@ type gamedb struct {
 
 var GameSession = gamedb{table: "GameSession"}
 
-func (g *gamedb) Get(lobbyId *string) (lobby.Lobby, error) {
-	var result lobby.Lobby
+func (g *gamedb) Get(lobbyId *string, gameSessionId *string) (*game.Session, error) {
+	var gSession game.Session
+	var gState state.GameState
 
 	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(g.table),
 		Key: map[string]types.AttributeValue{
-			"LobbyId": &types.AttributeValueMemberS{Value: *lobbyId},
+			"LobbyId":       &types.AttributeValueMemberS{Value: *lobbyId},
+			"GameSessionId": &types.AttributeValueMemberS{Value: *gameSessionId},
 		},
 	})
 
 	if err != nil {
 		log.Printf("Couldn't query %s table. Here's why: %v\n", g.table, err)
-		return result, err
+		return nil, err
 	}
 
 	if len(item.Item) == 0 {
-		return result, fmt.Errorf("lobby not found")
+		return nil, fmt.Errorf("lobby not found")
 	}
 
-	err = attributevalue.UnmarshalMap(item.Item, &result)
+	err = attributevalue.UnmarshalMap(item.Item, &gState)
 	if err != nil {
-		log.Printf("Error unmarshalling lobby.Lobby: %s", err)
-		return result, err
+		log.Printf("Error unmarshalling state.GameState: %s", err)
+		return nil, err
 	}
-
-	return result, nil
+	err = attributevalue.UnmarshalMap(item.Item, &gSession)
+	if err != nil {
+		log.Printf("Error unmarshalling game.Session: %s", err)
+		return nil, err
+	}
+	gSession.GameState = &gState
+	return &gSession, nil
 }
 
-func (g *gamedb) Add(lobbyId *string, gameSessionId *string, gameTypeId game.Id, teams []game.Team) (*game.Session, error) {
-	result := game.Session{
-		LobbyId: *lobbyId, GameSessionId: *gameSessionId, GameTypeId: gameTypeId,
+func (g *gamedb) Add(sessions *game.Session) (*game.Session, error) {
+	encoded, err := sessions.GameState.Teams.Encode()
+	if err != nil {
+		log.Printf("Couldn't encode teams for %s. Here's why: %v\n", sessions.LobbyId, err)
+		return sessions, err
 	}
-
-	_, err := DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	_, err = DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(g.table),
 		Item: map[string]types.AttributeValue{
-			"LobbyId":       &types.AttributeValueMemberS{Value: *lobbyId},
-			"GameSessionId": &types.AttributeValueMemberS{Value: *gameSessionId},
-			"GameTypeId":    &types.AttributeValueMemberN{Value: strconv.Itoa(int(gameTypeId))},
+			"LobbyId":       &types.AttributeValueMemberS{Value: sessions.LobbyId},
+			"GameSessionId": &types.AttributeValueMemberS{Value: sessions.GameSessionId},
+			"GameTypeId":    &types.AttributeValueMemberN{Value: strconv.Itoa(int(sessions.GameTypeId))},
+			"State":         &types.AttributeValueMemberS{Value: string(sessions.GameState.State)},
+			"CurrentTurn":   &types.AttributeValueMemberS{Value: string(sessions.GameState.CurrentTurn)},
+			"Teams":         &types.AttributeValueMemberS{Value: string(*encoded)},
 		},
 	})
 
 	if err != nil {
-		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", *lobbyId, g.table, err)
+		log.Printf("Couldn't add %s to %s table. Here's why: %v\n", sessions.LobbyId, g.table, err)
 		return nil, err
 	}
 
-	return &result, nil
+	return sessions, nil
 
 }

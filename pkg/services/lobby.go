@@ -3,6 +3,8 @@ package services
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/models/game"
+	"backend/pkg/models/game/state"
 	"backend/pkg/models/lobby"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
@@ -76,9 +78,9 @@ func LeaveLobby(context *models.Context, data *models.Data) error {
 	return ws.SendToLobby(context, route, lobby.PlayerLeftResponse{Player: player})
 }
 
-func StartGame(context *models.Context, data *models.Data) error {
+// LoadGame - This function is called when the host clicks the start game button. It will move the lobby into the selected game in prematch state
+func LoadGame(context *models.Context, data *models.Data) error {
 	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
-	gameSessionId := uuid.New().String()
 
 	settings, err := context.Lobby().Settings.Decode()
 	if err != nil {
@@ -89,7 +91,12 @@ func StartGame(context *models.Context, data *models.Data) error {
 
 	teams, err := RandomlyAssignTeams(context.Lobby(), players)
 
-	gameSession, err := db.GameSession.Add(context.LobbyId(), &gameSessionId, settings.GameId, teams)
+	gameSession, err := db.GameSession.Add(&game.Session{
+		LobbyId:       *context.LobbyId(),
+		GameSessionId: uuid.New().String(),
+		GameTypeId:    settings.GameId,
+		GameState:     state.NewGameState(teams),
+	})
 	if err != nil {
 		return err
 	}
@@ -106,6 +113,6 @@ func StartGame(context *models.Context, data *models.Data) error {
 		return err
 	}
 
-	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.StartGame)
+	route := models.NewRoute(&models.Service.Lobby, &lobby.Action.Server.LoadGame)
 	return ws.SendToLobby(context, route, updateLobby)
 }

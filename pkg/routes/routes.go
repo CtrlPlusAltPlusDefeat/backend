@@ -19,13 +19,16 @@ var (
 func Configure() {
 	add("player|create-session", services.CreateSession, ErrorCommunicateMiddleware)
 	add("player|use-session", services.UseSession, ErrorCommunicateMiddleware)
+
 	add("lobby|create", services.CreateLobby, ErrorCommunicateMiddleware, SessionMiddleware)
 	add("lobby|join", services.JoinLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("lobby|leave", services.LeaveLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
-	add("lobby|start-game", services.StartGame, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("lobby|load-game", services.LoadGame, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+
 	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
-	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+
+	add("game|player-action", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {

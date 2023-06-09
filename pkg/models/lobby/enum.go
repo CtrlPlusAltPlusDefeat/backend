@@ -11,7 +11,7 @@ type serverAction struct {
 	PlayerJoined string
 	PlayerLeft   string
 	NameChanged  string
-	StartGame    string
+	LoadGame     string
 }
 
 type lobbyAction struct {
@@ -30,6 +30,6 @@ var Action = lobbyAction{
 		PlayerJoined: "player-joined",
 		PlayerLeft:   "player-left",
 		NameChanged:  "name-change",
-		StartGame:    "start-game",
+		LoadGame:     "load-game",
 	},
 }
