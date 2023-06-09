@@ -1,26 +1,12 @@
-package settings
+package models
 
 import (
-	"backend/pkg/models/game"
 	"encoding/json"
 )
 
 type Encoded string
 
-type Settings struct {
-	GameId     game.Id         `json:"gameId"`
-	MaxPlayers int             `json:"maxPlayers"`
-	Teams      int             `json:"teams"`
-	Other      json.RawMessage `json:"other"`
-}
-
-type BaseSettings struct {
-	GameId     game.Id `json:"gameId"`
-	MaxPlayers int     `json:"maxPlayers"`
-	Teams      int     `json:"teams"`
-}
-
-func GetDefaultSettings(maxPlayers int, gameId game.Id) *Settings {
+func GetDefaultSettings(maxPlayers int, gameId Id) *Settings {
 	return &Settings{
 		MaxPlayers: maxPlayers,
 		GameId:     gameId,

@@ -1,17 +1,16 @@
 package models
 
 import (
-	"backend/pkg/models/lobby"
 	"context"
 )
 
 type Context struct {
-	value context.Context
-
+	value      context.Context
+	route      *Route
 	connection *ConnectionContext
 
 	sessionId *string
-	lobby     *lobby.Lobby
+	lobby     *Lobby
 }
 
 type ConnectionContext struct {
@@ -39,9 +38,14 @@ func (c Context) SessionId() *string {
 	return c.sessionId
 }
 
-func (c Context) Lobby() *lobby.Lobby {
+func (c Context) Lobby() *Lobby {
 	return c.lobby
 }
+
+func (c Context) Route() *Route {
+	return c.route
+}
+
 func (c Context) LobbyId() *string {
 	return &c.lobby.LobbyId
 }
@@ -62,6 +66,7 @@ func (c Context) ForConnection(id *string) *Context {
 	return &Context{
 		value:     c.value,
 		lobby:     c.lobby,
+		route:     c.route,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   id,
@@ -76,6 +81,7 @@ func (c Context) ForSession(id *string) *Context {
 		value:     c.value,
 		lobby:     c.lobby,
 		sessionId: id,
+		route:     c.route,
 		connection: &ConnectionContext{
 			id:   c.connection.id,
 			host: c.connection.host,
@@ -84,10 +90,25 @@ func (c Context) ForSession(id *string) *Context {
 	}
 }
 
-func (c Context) ForLobby(lobby *lobby.Lobby) *Context {
+func (c Context) ForLobby(lobby *Lobby) *Context {
 	return &Context{
 		value:     c.value,
 		lobby:     lobby,
+		route:     c.route,
+		sessionId: c.sessionId,
+		connection: &ConnectionContext{
+			id:   c.connection.id,
+			host: c.connection.host,
+			path: c.connection.path,
+		},
+	}
+}
+
+func (c Context) ForRoute(route *Route) *Context {
+	return &Context{
+		value:     c.value,
+		lobby:     c.lobby,
+		route:     route,
 		sessionId: c.sessionId,
 		connection: &ConnectionContext{
 			id:   c.connection.id,

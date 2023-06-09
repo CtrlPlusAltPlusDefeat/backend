@@ -3,7 +3,6 @@ package services
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
-	"backend/pkg/models/player"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
 	"log"
@@ -14,7 +13,7 @@ func CreateSession(context *models.Context, data *models.Data) error {
 }
 
 func UseSession(context *models.Context, data *models.Data) error {
-	req := player.SessionUseRequest{}
+	req := models.SessionUseRequest{}
 	err := data.DecodeTo(&req)
 
 	if err != nil {
@@ -61,12 +60,8 @@ func setSession(context *models.Context) error {
 			return err
 		}
 	}
-
-	//create response
-	res := player.SessionResponse{SessionId: *context.SessionId()}
-	route := models.NewRoute(&models.Service.Player, &player.Action.Server.SetSession)
-
-	return ws.Send(context, route, res)
+	res := models.SessionResponse{SessionId: *context.SessionId()}
+	return ws.Send(context, models.SetSession(), res)
 }
 
 func destroySession(context *models.Context) error {

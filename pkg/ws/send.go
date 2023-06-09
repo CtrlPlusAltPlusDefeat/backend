@@ -57,7 +57,7 @@ func SendToLobby(context *models.Context, route *models.Route, message interface
 // results in an error is if the connection ID is no longer valid. This can occur when a client disconnected from the
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
-func Send(context *models.Context, route *models.Route, message interface{}) error {
+func Send(context *models.Context, route *models.Route, message any) error {
 
 	value, _ := json.Marshal(message)
 	wrapper := models.Wrapper{Service: *route.Service(), Action: *route.Action(), Data: string(value)}
