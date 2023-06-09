@@ -3,12 +3,10 @@ package services
 import (
 	"backend/pkg/models"
 	"backend/pkg/models/game"
-	"backend/pkg/models/lobby"
-	"backend/pkg/models/player"
 	"backend/pkg/ws"
 )
 
-func RandomlyAssignTeams(lobby *lobby.Lobby, players []player.Player) ([]game.Team, error) {
+func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) ([]game.Team, error) {
 	settings, err := lobby.Settings.Decode()
 	if err != nil {
 		return make([]game.Team, 0), err
@@ -20,7 +18,7 @@ func RandomlyAssignTeams(lobby *lobby.Lobby, players []player.Player) ([]game.Te
 	}
 
 	for i := range teams {
-		teams[i].Name = game.GetTeamName(i)
+		teams[i].Name = models.GetTeamName(i)
 	}
 
 	return teams, nil

@@ -1,4 +1,4 @@
-package game
+package models
 
 type Id int
 

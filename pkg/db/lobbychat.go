@@ -1,7 +1,7 @@
 package db
 
 import (
-	"backend/pkg/models/chat"
+	"backend/pkg/models"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -18,8 +18,8 @@ type lobbychat struct {
 
 var LobbyChat = lobbychat{table: "LobbyChat"}
 
-func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (chat.Chat, error) {
-	c := chat.Chat{
+func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (models.Chat, error) {
+	c := models.Chat{
 		Message:   *message,
 		Timestamp: time.Now().Unix(),
 		PlayerId:  *playerId,
@@ -44,8 +44,8 @@ func (l *lobbychat) Add(lobbyId *string, playerId *string, message *string) (cha
 	return c, err
 }
 
-func (l *lobbychat) Get(lobbyId *string, timestamp int64) ([]chat.Chat, error) {
-	var chats []chat.Chat
+func (l *lobbychat) Get(lobbyId *string, timestamp int64) ([]models.Chat, error) {
+	var chats []models.Chat
 
 	if timestamp == 0 {
 		timestamp = time.Now().Unix()
@@ -71,7 +71,7 @@ func (l *lobbychat) Get(lobbyId *string, timestamp int64) ([]chat.Chat, error) {
 	}
 
 	for _, item := range query.Items {
-		var c chat.Chat
+		var c models.Chat
 		err = attributevalue.UnmarshalMap(item, &c)
 
 		if err != nil {

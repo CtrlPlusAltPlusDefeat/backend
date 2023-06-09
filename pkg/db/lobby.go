@@ -1,8 +1,8 @@
 package db
 
 import (
-	"backend/pkg/models/game/settings"
-	"backend/pkg/models/lobby"
+	"backend/pkg/models"
+	"backend/pkg/models/settings"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -18,8 +18,8 @@ type lobbydb struct {
 
 var Lobby = lobbydb{table: "Lobby"}
 
-func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
-	var result lobby.Lobby
+func (l *lobbydb) Get(lobbyId *string) (models.Lobby, error) {
+	var result models.Lobby
 
 	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{TableName: aws.String(l.table),
 		Key: map[string]types.AttributeValue{
@@ -45,7 +45,7 @@ func (l *lobbydb) Get(lobbyId *string) (lobby.Lobby, error) {
 	return result, nil
 }
 
-func (l *lobbydb) Update(lobby lobby.Lobby) error {
+func (l *lobbydb) Update(lobby models.Lobby) error {
 	_, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(l.table),
 		Key: map[string]types.AttributeValue{

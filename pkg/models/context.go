@@ -1,7 +1,6 @@
 package models
 
 import (
-	"backend/pkg/models/lobby"
 	"context"
 )
 
@@ -11,7 +10,7 @@ type Context struct {
 	connection *ConnectionContext
 
 	sessionId *string
-	lobby     *lobby.Lobby
+	lobby     *Lobby
 }
 
 type ConnectionContext struct {
@@ -39,7 +38,7 @@ func (c Context) SessionId() *string {
 	return c.sessionId
 }
 
-func (c Context) Lobby() *lobby.Lobby {
+func (c Context) Lobby() *Lobby {
 	return c.lobby
 }
 
@@ -89,7 +88,7 @@ func (c Context) ForSession(id *string) *Context {
 	}
 }
 
-func (c Context) ForLobby(lobby *lobby.Lobby) *Context {
+func (c Context) ForLobby(lobby *Lobby) *Context {
 	return &Context{
 		value:     c.value,
 		lobby:     lobby,

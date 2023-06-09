@@ -1,17 +1,19 @@
 package settings
 
 import (
-	"backend/pkg/models/game"
+	"backend/pkg/models"
 	"encoding/json"
 )
+
+type Settings models.Settings
 
 type WordGuessSettings struct {
 	BlackCards int `json:"BlackCards"`
 	WhiteCards int `json:"WhiteCards"`
 }
 
-func GetDefaultWordGuess() *Settings {
-	settings := GetDefaultSettings(12, game.WordGuess)
+func GetDefaultWordGuess() *models.Settings {
+	settings := models.GetDefaultSettings(12, models.WordGuess)
 	settings.Other, _ = json.Marshal(WordGuessSettings{
 		BlackCards: 10,
 		WhiteCards: 10,

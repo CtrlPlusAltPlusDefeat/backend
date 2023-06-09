@@ -1,6 +1,8 @@
-package state
+package game
 
-import "backend/pkg/models"
+import (
+	"backend/pkg/models"
+)
 
 type EventType string
 
@@ -15,10 +17,10 @@ const (
 
 type Controller struct {
 	handlers  map[EventType]ControllerHandler
-	GameState *GameState
+	GameState *State
 }
 
-func NewController(state *GameState) *Controller {
+func NewController(state *State) *Controller {
 	return &Controller{
 		handlers:  make(map[EventType]ControllerHandler),
 		GameState: state,

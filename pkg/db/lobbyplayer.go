@@ -1,7 +1,7 @@
 package db
 
 import (
-	"backend/pkg/models/player"
+	"backend/pkg/models"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -18,8 +18,8 @@ type lobbyplayer struct {
 
 var LobbyPlayer = lobbyplayer{table: "LobbyPlayer"}
 
-func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *string, name string, isAdmin bool) (player.Player, error) {
-	var p player.Player
+func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *string, name string, isAdmin bool) (models.Player, error) {
+	var p models.Player
 
 	item, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(l.table),
@@ -59,8 +59,8 @@ func (l *lobbyplayer) Add(lobbyId *string, sessionId *string, connectionId *stri
 	return p, err
 }
 
-func (l *lobbyplayer) GetPlayers(lobbyId *string) ([]player.Player, error) {
-	var players []player.Player
+func (l *lobbyplayer) GetPlayers(lobbyId *string) ([]models.Player, error) {
+	var players []models.Player
 
 	query, err := DynamoDb.Query(context.TODO(), &dynamodb.QueryInput{TableName: aws.String(l.table),
 		KeyConditionExpression: aws.String("LobbyId=:LobbyId"),
@@ -73,7 +73,7 @@ func (l *lobbyplayer) GetPlayers(lobbyId *string) ([]player.Player, error) {
 		return players, err
 	}
 	for _, item := range query.Items {
-		var p player.Player
+		var p models.Player
 		err = attributevalue.UnmarshalMap(item, &p)
 		if err != nil {
 			log.Printf("Error unmarshalling dyanmodb map: %s", err)
@@ -83,8 +83,8 @@ func (l *lobbyplayer) GetPlayers(lobbyId *string) ([]player.Player, error) {
 	return players, nil
 }
 
-func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (player.Player, error) {
-	var p player.Player
+func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (models.Player, error) {
+	var p models.Player
 
 	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{TableName: aws.String(l.table),
 		Key: map[string]types.AttributeValue{
@@ -108,8 +108,8 @@ func (l *lobbyplayer) Get(lobbyId *string, sessionId *string) (player.Player, er
 	return p, nil
 }
 
-func (l *lobbyplayer) UpdateOnline(lobbyId *string, sessionId *string, online bool) (player.Player, error) {
-	var p player.Player
+func (l *lobbyplayer) UpdateOnline(lobbyId *string, sessionId *string, online bool) (models.Player, error) {
+	var p models.Player
 
 	item, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(l.table),
@@ -141,8 +141,8 @@ func (l *lobbyplayer) UpdateOnline(lobbyId *string, sessionId *string, online bo
 }
 
 // GetLobbiesBySessionId returns all lobbies that a players sessionId is in
-func (l *lobbyplayer) GetLobbiesBySessionId(sessionId *string) ([]player.Player, error) {
-	var lobbyPlayers []player.Player
+func (l *lobbyplayer) GetLobbiesBySessionId(sessionId *string) ([]models.Player, error) {
+	var lobbyPlayers []models.Player
 
 	output, err := DynamoDb.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String(l.table),
@@ -161,7 +161,7 @@ func (l *lobbyplayer) GetLobbiesBySessionId(sessionId *string) ([]player.Player,
 	}
 
 	for _, item := range output.Items {
-		var p player.Player
+		var p models.Player
 		err = attributevalue.UnmarshalMap(item, &p)
 		if err != nil {
 			log.Printf("Error unmarshalling dyanmodb map: %s", err)

@@ -2,7 +2,6 @@ package db
 
 import (
 	"backend/pkg/models/game"
-	"backend/pkg/models/game/state"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,7 +20,7 @@ var GameSession = gamedb{table: "GameSession"}
 
 func (g *gamedb) Get(lobbyId *string, gameSessionId *string) (*game.Session, error) {
 	var gSession game.Session
-	var gState state.GameState
+	var gState game.State
 
 	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(g.table),
