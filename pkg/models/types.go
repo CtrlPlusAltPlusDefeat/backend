@@ -26,11 +26,11 @@ type Chat struct {
 }
 
 type Details struct {
-	Players  []Player `json:"players"`
-	LobbyId  string   `json:"lobbyId"`
-	Settings Encoded  `json:"settings"`
-	InGame   bool     `json:"inGame"`
-	GameId   string   `json:"gameId"`
+	Players       []Player `json:"players"`
+	LobbyId       string   `json:"lobbyId"`
+	Settings      Encoded  `json:"settings"`
+	InGame        bool     `json:"inGame"`
+	GameSessionId string   `json:"gameSessionId"`
 }
 
 type Lobby struct {

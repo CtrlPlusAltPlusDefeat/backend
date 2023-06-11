@@ -5,7 +5,7 @@ import (
 )
 
 func ValidateGameState(next ControllerHandler) ControllerHandler {
-	return func(state *State, controller *Controller) {
+	return func(state *Session, controller *Controller) {
 		fmt.Printf("Validating GameState\n")
 		if controller.GameState != nil {
 			next(state, controller)

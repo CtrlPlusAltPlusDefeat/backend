@@ -88,3 +88,7 @@ func (c *Context) ForGameSession(gameSession *game.Session) *Context {
 	c.gameSession = gameSession
 	return c
 }
+
+func (c *Context) GameSession() *game.Session {
+	return c.gameSession
+}

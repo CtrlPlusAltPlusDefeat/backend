@@ -5,24 +5,16 @@ import (
 	"encoding/json"
 )
 
-type EncodedGameState string
-
-type State struct {
-	Teams       TeamArray       `dynamodbav:"Teams" json:"teams"`
-	CurrentTurn models.TeamName `dynamodbav:"CurrentTurn" json:"currentTurn"`
-	State       models.State    `dynamodbav:"State" json:"state"`
-}
-
-func NewGameState(teams TeamArray) *State {
-	return &State{
+func NewGameState(teams TeamArray) *SessionState {
+	return &SessionState{
 		Teams:       teams,
 		CurrentTurn: models.None,
 		State:       models.PreMatch,
 	}
 }
 
-func (e *EncodedGameState) Decode() (*State, error) {
-	gameState := State{}
+func (e *EncodedGameState) Decode() (*SessionState, error) {
+	gameState := SessionState{}
 	err := json.Unmarshal([]byte(*e), &gameState)
 	if err != nil {
 		return nil, err
@@ -30,7 +22,7 @@ func (e *EncodedGameState) Decode() (*State, error) {
 	return &gameState, nil
 }
 
-func (g *State) Encode() (*EncodedGameState, error) {
+func (g *SessionState) Encode() (*EncodedGameState, error) {
 	marshal, err := json.Marshal(g)
 	if err != nil {
 		return nil, err
@@ -39,7 +31,7 @@ func (g *State) Encode() (*EncodedGameState, error) {
 	return &encoded, nil
 }
 
-func (g *State) SetNextTurn() *State {
+func (g *SessionState) SetNextTurn() *SessionState {
 	currentTurnIndex := g.Teams.GetIndex(g.CurrentTurn)
 	if currentTurnIndex == -1 {
 		return g
@@ -53,11 +45,6 @@ func (g *State) SetNextTurn() *State {
 	return g
 }
 
-type Team struct {
-	Name    models.TeamName
-	Players []string
-}
-
 func CreateTeams(number int) TeamArray {
 	var teams TeamArray
 	for i := 0; i < number; i++ {
@@ -68,9 +55,6 @@ func CreateTeams(number int) TeamArray {
 	}
 	return teams
 }
-
-type TeamArray []Team
-type EncodedTeamArray string
 
 func (t TeamArray) GetIndex(team models.TeamName) int {
 	for i, x := range t {
@@ -88,6 +72,7 @@ func (t TeamArray) Encode() (*EncodedTeamArray, error) {
 	encoded := EncodedTeamArray(marshaled)
 	return &encoded, err
 }
+
 func (t *EncodedTeamArray) Decode() *TeamArray {
 	teamArray := TeamArray{}
 	err := json.Unmarshal([]byte(*t), &teamArray)

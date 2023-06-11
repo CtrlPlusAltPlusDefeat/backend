@@ -28,3 +28,7 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) ([]game.T
 func PlayerAction(context *context.Context, data *models.Data) error {
 	return ws.SendToLobby(context, context.Route(), game.Session{})
 }
+
+func GetState(context *context.Context, data *models.Data) error {
+	return ws.Send(context, context.Route(), context.GameSession())
+}

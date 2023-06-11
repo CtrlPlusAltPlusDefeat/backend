@@ -75,6 +75,7 @@ func GameSessionMiddleware(next Handler) Handler {
 		}
 
 		res, err := db.GameSession.Get(&req.LobbyId, &req.GameSessionId)
+		context.ForLobby(&models.Lobby{LobbyId: req.LobbyId})
 
 		if err != nil {
 			return err

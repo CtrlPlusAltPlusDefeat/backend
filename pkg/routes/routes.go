@@ -29,7 +29,7 @@ func Configure() {
 	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 
-	add("game|get-state", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, GameSessionMiddleware)
+	add("game|get-state", services.GetState, ErrorCommunicateMiddleware, SessionMiddleware, GameSessionMiddleware)
 	add("game|player-action", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, GameSessionMiddleware)
 }
 

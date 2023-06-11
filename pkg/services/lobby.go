@@ -55,7 +55,7 @@ func join(context *context.Context, name string, isAdmin bool) error {
 		return err
 	}
 
-	err = ws.Send(context, models.JoinedLobby(), models.GetResponse{Player: player, Lobby: models.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameSessionId}})
+	err = ws.Send(context, models.JoinedLobby(), models.GetResponse{Player: player, Lobby: models.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameSessionId: context.Lobby().GameSessionId}})
 
 	if err != nil {
 		return err
@@ -88,10 +88,12 @@ func LoadGame(context *context.Context, data *models.Data) error {
 	teams, err := RandomlyAssignTeams(context.Lobby(), players)
 
 	gameSession, err := db.GameSession.Add(&game.Session{
-		LobbyId:       *context.LobbyId(),
-		GameSessionId: uuid.New().String(),
-		GameTypeId:    settings.GameId,
-		GameState:     game.NewGameState(teams),
+		Info: &game.SessionInfo{
+			LobbyId:       *context.LobbyId(),
+			GameSessionId: uuid.New().String(),
+			GameTypeId:    settings.GameId,
+		},
+		State: game.NewGameState(teams),
 	})
 	if err != nil {
 		return err
@@ -101,7 +103,7 @@ func LoadGame(context *context.Context, data *models.Data) error {
 		LobbyId:       *context.LobbyId(),
 		Settings:      context.Lobby().Settings,
 		InGame:        true,
-		GameSessionId: gameSession.GameSessionId,
+		GameSessionId: gameSession.Info.GameSessionId,
 	}
 
 	err = db.Lobby.Update(updateLobby)
