@@ -3,16 +3,17 @@ package services
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/models/context"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
 	"log"
 )
 
-func CreateSession(context *models.Context, data *models.Data) error {
+func CreateSession(context *context.Context, data *models.Data) error {
 	return createSession(context)
 }
 
-func UseSession(context *models.Context, data *models.Data) error {
+func UseSession(context *context.Context, data *models.Data) error {
 	req := models.SessionUseRequest{}
 	err := data.DecodeTo(&req)
 
@@ -29,13 +30,13 @@ func UseSession(context *models.Context, data *models.Data) error {
 	return setSession(context.ForSession(&req.SessionId))
 }
 
-func createSession(context *models.Context) error {
+func createSession(context *context.Context) error {
 	id := uuid.New().String()
 
 	return setSession(context.ForSession(&id))
 }
 
-func setSession(context *models.Context) error {
+func setSession(context *context.Context) error {
 	log.Printf("SetSession for connection %s to %s", *context.ConnectionId(), *context.SessionId())
 
 	connection, err := db.Connection.Get(context.ConnectionId())
@@ -64,7 +65,7 @@ func setSession(context *models.Context) error {
 	return ws.Send(context, models.SetSession(), res)
 }
 
-func destroySession(context *models.Context) error {
+func destroySession(context *context.Context) error {
 	connections, err := db.Connection.GetBySessionId(context.SessionId())
 
 	if err != nil || len(connections) == 0 {

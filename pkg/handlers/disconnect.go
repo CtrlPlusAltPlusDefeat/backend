@@ -4,6 +4,7 @@ import (
 	apigateway "backend/pkg/aws-helpers/api-gateway"
 	"backend/pkg/db"
 	"backend/pkg/models"
+	customCtx "backend/pkg/models/context"
 	"backend/pkg/services"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
@@ -14,7 +15,7 @@ import (
 func DisconnectHandler(context context.Context, req *events.APIGatewayWebsocketProxyRequest) (apigateway.Response, error) {
 	log.Printf("DisconnectHandler requestId: %s, connectionId:%s \n\r", req.RequestContext.RequestID, req.RequestContext.ConnectionID)
 
-	con := models.NewContext(context, &req.RequestContext.ConnectionID, &req.RequestContext.DomainName, &req.RequestContext.Stage)
+	con := customCtx.NewContext(context, &req.RequestContext.ConnectionID, &req.RequestContext.DomainName, &req.RequestContext.Stage)
 	data, _ := models.NewData(req.Body)
 
 	connection, err := db.Connection.Get(&req.RequestContext.ConnectionID)

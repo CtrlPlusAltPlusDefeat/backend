@@ -52,16 +52,16 @@ func (l *lobbydb) Update(lobby models.Lobby) error {
 			"LobbyId": &types.AttributeValueMemberS{Value: lobby.LobbyId},
 		},
 		ExpressionAttributeNames: map[string]string{
-			"#Settings": "Settings",
-			"#InGame":   "InGame",
-			"#GameId":   "GameId",
+			"#Settings":      "Settings",
+			"#InGame":        "InGame",
+			"#GameSessionId": "GameSessionId",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":Settings": &types.AttributeValueMemberS{Value: string(lobby.Settings)},
-			":InGame":   &types.AttributeValueMemberBOOL{Value: lobby.InGame},
-			":GameId":   &types.AttributeValueMemberS{Value: lobby.GameId},
+			":Settings":      &types.AttributeValueMemberS{Value: string(lobby.Settings)},
+			":InGame":        &types.AttributeValueMemberBOOL{Value: lobby.InGame},
+			":GameSessionId": &types.AttributeValueMemberS{Value: lobby.GameSessionId},
 		},
-		UpdateExpression: aws.String("set #Settings=:Settings, #InGame=:InGame, #GameId=:GameId"),
+		UpdateExpression: aws.String("set #Settings=:Settings, #InGame=:InGame, #GameSessionId=:GameSessionId"),
 	})
 
 	if err != nil {
@@ -81,10 +81,10 @@ func (l *lobbydb) Add(lobbyId *string) error {
 	_, err = DynamoDb.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(l.table),
 		Item: map[string]types.AttributeValue{
-			"LobbyId":  &types.AttributeValueMemberS{Value: *lobbyId},
-			"Settings": &types.AttributeValueMemberS{Value: string(lobbySettings)},
-			"InGame":   &types.AttributeValueMemberBOOL{Value: false},
-			"GameId":   &types.AttributeValueMemberS{Value: ""},
+			"LobbyId":       &types.AttributeValueMemberS{Value: *lobbyId},
+			"Settings":      &types.AttributeValueMemberS{Value: string(lobbySettings)},
+			"InGame":        &types.AttributeValueMemberBOOL{Value: false},
+			"GameSessionId": &types.AttributeValueMemberS{Value: ""},
 		},
 	})
 

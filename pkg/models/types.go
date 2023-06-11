@@ -34,10 +34,10 @@ type Details struct {
 }
 
 type Lobby struct {
-	LobbyId  string  `json:"lobbyId" dynamodbav:"LobbyId"`
-	Settings Encoded `json:"settings" dynamodbav:"Settings"`
-	InGame   bool    `json:"inGame" dynamodbav:"InGame"`
-	GameId   string  `json:"gameId" dynamodbav:"GameId"`
+	LobbyId       string  `json:"lobbyId" dynamodbav:"LobbyId"`
+	Settings      Encoded `json:"settings" dynamodbav:"Settings"`
+	InGame        bool    `json:"inGame" dynamodbav:"InGame"`
+	GameSessionId string  `json:"gameSessionId" dynamodbav:"GameSessionId"`
 }
 
 type Settings struct {

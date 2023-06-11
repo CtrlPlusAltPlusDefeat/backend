@@ -4,6 +4,7 @@ import (
 	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/models/context"
 	"encoding/json"
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi"
@@ -17,7 +18,7 @@ import (
 
 var LocalConnections = make(map[string]*websocket.Conn)
 
-func getClient(context *models.Context) *apigatewaymanagementapi.Client {
+func getClient(context *context.Context) *apigatewaymanagementapi.Client {
 	callbackURL := url.URL{
 		Scheme: "https",
 		Host:   *context.ConnectionHost(),
@@ -31,7 +32,7 @@ func getClient(context *models.Context) *apigatewaymanagementapi.Client {
 	})
 }
 
-func SendToLobby(context *models.Context, route *models.Route, message interface{}) error {
+func SendToLobby(context *context.Context, route *models.Route, message interface{}) error {
 	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
 
 	if err != nil {
@@ -57,7 +58,7 @@ func SendToLobby(context *models.Context, route *models.Route, message interface
 // results in an error is if the connection ID is no longer valid. This can occur when a client disconnected from the
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
-func Send(context *models.Context, route *models.Route, message any) error {
+func Send(context *context.Context, route *models.Route, message any) error {
 
 	value, _ := json.Marshal(message)
 	wrapper := models.Wrapper{Service: *route.Service(), Action: *route.Action(), Data: string(value)}

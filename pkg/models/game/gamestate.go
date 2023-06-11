@@ -57,6 +57,18 @@ type Team struct {
 	Name    models.TeamName
 	Players []string
 }
+
+func CreateTeams(number int) TeamArray {
+	var teams TeamArray
+	for i := 0; i < number; i++ {
+		teams = append(teams, Team{
+			Name:    models.GetTeamName(i),
+			Players: make([]string, 0),
+		})
+	}
+	return teams
+}
+
 type TeamArray []Team
 type EncodedTeamArray string
 
