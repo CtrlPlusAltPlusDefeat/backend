@@ -5,6 +5,7 @@ import "backend/pkg/models"
 type Session struct {
 	Info  *SessionInfo  `dynamodbav:"-" json:"info"`
 	State *SessionState `dynamodbav:"-" json:"state"`
+	Teams TeamArray     `dynamodbav:"-" json:"teams"`
 }
 
 type SessionInfo struct {
@@ -13,13 +14,12 @@ type SessionInfo struct {
 	GameTypeId    models.Id `dynamodbav:"GameTypeId" json:"gameTypeId"`
 }
 
-type EncodedGameState string
-
 type SessionState struct {
-	Teams       TeamArray       `dynamodbav:"-" json:"teams"`
 	CurrentTurn models.TeamName `dynamodbav:"CurrentTurn" json:"currentTurn"`
 	State       models.State    `dynamodbav:"State" json:"state"`
 }
+
+type EncodedGameState string
 
 type Team struct {
 	Name    models.TeamName `json:"name"`

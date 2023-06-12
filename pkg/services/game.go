@@ -7,7 +7,7 @@ import (
 	"backend/pkg/ws"
 )
 
-func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) ([]game.Team, error) {
+func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.TeamArray, error) {
 	settings, err := lobby.Settings.Decode()
 	if err != nil {
 		return make([]game.Team, 0), err

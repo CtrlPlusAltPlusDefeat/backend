@@ -93,7 +93,8 @@ func LoadGame(context *context.Context, data *models.Data) error {
 			GameSessionId: uuid.New().String(),
 			GameTypeId:    settings.GameId,
 		},
-		State: game.NewGameState(teams),
+		State: game.NewGameState(),
+		Teams: teams,
 	})
 	if err != nil {
 		return err

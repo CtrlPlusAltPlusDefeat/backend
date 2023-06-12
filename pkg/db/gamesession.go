@@ -51,16 +51,15 @@ func (g *gamedb) Get(lobbyId *string, gameSessionId *string) (*game.Session, err
 		return nil, err
 	}
 
-	gState.Teams = *teamsJson.Decode()
-
 	return &game.Session{
 		State: &gState,
 		Info:  &gInfo,
+		Teams: *teamsJson.Decode(),
 	}, nil
 }
 
 func (g *gamedb) Add(sessions *game.Session) (*game.Session, error) {
-	encoded, err := sessions.State.Teams.Encode()
+	encoded, err := sessions.Teams.Encode()
 	if err != nil {
 		log.Printf("Couldn't encode teams for %s. Here's why: %v\n", sessions.Info.LobbyId, err)
 		return sessions, err
