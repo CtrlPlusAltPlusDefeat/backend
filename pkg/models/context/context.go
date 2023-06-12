@@ -10,8 +10,8 @@ type Context struct {
 	value       context.Context
 	route       *models.Route
 	connection  *ConnectionContext
-	gameSession *game.Session
 	sessionId   *string
+	gameSession *game.Session
 	lobby       *models.Lobby
 }
 
@@ -52,6 +52,10 @@ func (c *Context) LobbyId() *string {
 	return &c.lobby.LobbyId
 }
 
+func (c *Context) GameSession() *game.Session {
+	return c.gameSession
+}
+
 func (c *Context) ConnectionId() *string {
 	return c.connection.id
 }
@@ -65,30 +69,51 @@ func (c *Context) ConnectionPath() *string {
 }
 
 func (c *Context) ForConnection(id *string) *Context {
-	c.connection.id = id
-	return c
+	n := c.duplicate()
+	n.connection.id = id
+
+	return n
 }
 
 func (c *Context) ForSession(sessionId *string) *Context {
-	c.sessionId = sessionId
-	return c
+	n := c.duplicate()
+	n.sessionId = sessionId
+
+	return n
 }
 
 func (c *Context) ForLobby(lobby *models.Lobby) *Context {
-	c.lobby = lobby
-	return c
+	n := c.duplicate()
+	n.lobby = lobby
+
+	return n
 }
 
 func (c *Context) ForRoute(route *models.Route) *Context {
-	c.route = route
-	return c
+	n := c.duplicate()
+	n.route = route
+
+	return n
 }
 
 func (c *Context) ForGameSession(gameSession *game.Session) *Context {
-	c.gameSession = gameSession
-	return c
+	n := c.duplicate()
+	n.gameSession = gameSession
+
+	return n
 }
 
-func (c *Context) GameSession() *game.Session {
-	return c.gameSession
+func (c *Context) duplicate() *Context {
+	return &Context{
+		value: c.value,
+		connection: &ConnectionContext{
+			id:   c.connection.id,
+			host: c.connection.host,
+			path: c.connection.path,
+		},
+		route:       c.route,
+		gameSession: c.gameSession,
+		sessionId:   c.sessionId,
+		lobby:       c.lobby,
+	}
 }
