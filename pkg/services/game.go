@@ -27,10 +27,21 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.Tea
 }
 
 func PlayerAction(context *context.Context, data *models.Data) error {
-	session := context.GameSession()
-	session.IncrementState()
+	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 
-	session, err := db.GameSession.Add(context.GameSession())
+	if err != nil {
+		return err
+	}
+
+	session := context.GameSession()
+
+	err = session.IncrementState(player)
+
+	if err != nil {
+		return err
+	}
+
+	session, err = db.GameSession.Add(context.GameSession())
 
 	if err != nil {
 		return err

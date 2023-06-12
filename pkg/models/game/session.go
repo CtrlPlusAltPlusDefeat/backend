@@ -1,6 +1,11 @@
 package game
 
-func (g *Session) IncrementState() *Session {
+import (
+	"backend/pkg/models"
+	"fmt"
+)
+
+func (g *Session) IncrementState(player models.Player) error {
 	switch g.State.State {
 	case "prematch":
 		{
@@ -13,6 +18,10 @@ func (g *Session) IncrementState() *Session {
 		{
 			currentTurnIndex := g.Teams.GetIndex(g.State.CurrentTurn)
 
+			if g.Teams[currentTurnIndex].IncludesPlayer(player.Id) == false {
+				return fmt.Errorf("player not apart of current team")
+			}
+
 			if currentTurnIndex == len(g.Teams)-1 {
 				g.State.CurrentTurn = g.Teams[0].Name
 			} else {
@@ -24,5 +33,5 @@ func (g *Session) IncrementState() *Session {
 
 	}
 
-	return g
+	return nil
 }

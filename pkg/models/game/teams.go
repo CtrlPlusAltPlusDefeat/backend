@@ -41,3 +41,13 @@ func (t *EncodedTeamArray) Decode() *TeamArray {
 	}
 	return &teamArray
 }
+
+func (t Team) IncludesPlayer(id string) bool {
+	for _, x := range t.Players {
+		if x == id {
+			return true
+		}
+	}
+
+	return false
+}
