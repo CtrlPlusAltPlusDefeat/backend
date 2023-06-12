@@ -2,6 +2,7 @@ package routes
 
 import (
 	"backend/pkg/models"
+	"backend/pkg/models/context"
 	"backend/pkg/services"
 	"log"
 )
@@ -9,7 +10,7 @@ import (
 type (
 	Middleware func(handler Handler) Handler
 
-	Handler func(context *models.Context, data *models.Data) error
+	Handler func(context *context.Context, data *models.Data) error
 )
 
 var (
@@ -28,7 +29,8 @@ func Configure() {
 	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 
-	add("game|player-action", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("game|get-state", services.GetState, ErrorCommunicateMiddleware, SessionMiddleware, GameSessionMiddleware)
+	add("game|player-action", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, GameSessionMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {
@@ -39,7 +41,7 @@ func add(route string, handler Handler, middleware ...Middleware) {
 	handlers[route] = handler
 }
 
-func Execute(context *models.Context, data *models.Data) {
+func Execute(context *context.Context, data *models.Data) {
 	route := data.Route().Value()
 	log.Printf("Beginning Invoking '%s'", route)
 	context = context.ForRoute(data.Route())

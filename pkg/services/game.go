@@ -2,16 +2,17 @@ package services
 
 import (
 	"backend/pkg/models"
+	"backend/pkg/models/context"
 	"backend/pkg/models/game"
 	"backend/pkg/ws"
 )
 
-func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) ([]game.Team, error) {
+func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.TeamArray, error) {
 	settings, err := lobby.Settings.Decode()
 	if err != nil {
 		return make([]game.Team, 0), err
 	}
-	teams := make([]game.Team, settings.Teams)
+	teams := game.CreateTeams(settings.Teams)
 
 	for i := 0; i < len(players); i++ {
 		teams[i%len(teams)].Players = append(teams[i%len(teams)].Players, players[i].Id)
@@ -24,6 +25,10 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) ([]game.T
 	return teams, nil
 }
 
-func PlayerAction(context *models.Context, data *models.Data) error {
+func PlayerAction(context *context.Context, data *models.Data) error {
 	return ws.SendToLobby(context, context.Route(), game.Session{})
+}
+
+func GetState(context *context.Context, data *models.Data) error {
+	return ws.Send(context, context.Route(), context.GameSession())
 }

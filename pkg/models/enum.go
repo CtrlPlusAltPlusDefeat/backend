@@ -48,5 +48,5 @@ type State string
 const (
 	PreMatch   State = "prematch"
 	InProgress State = "inprogress"
-	Finished   State = "finished"
+	PostMatch  State = "postmatch"
 )

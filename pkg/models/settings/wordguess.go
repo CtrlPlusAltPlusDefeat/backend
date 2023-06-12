@@ -14,6 +14,7 @@ type WordGuessSettings struct {
 
 func GetDefaultWordGuess() *models.Settings {
 	settings := models.GetDefaultSettings(12, models.WordGuess)
+	settings.Teams = 2
 	settings.Other, _ = json.Marshal(WordGuessSettings{
 		BlackCards: 10,
 		WhiteCards: 10,

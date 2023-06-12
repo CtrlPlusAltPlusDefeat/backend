@@ -1,12 +1,8 @@
 package game
 
-import (
-	"backend/pkg/models"
-)
-
 type EventType string
 
-type ControllerHandler func(ctx *models.Context, controller *Controller)
+type ControllerHandler func(state *Session, controller *Controller)
 
 type Middleware func(handler ControllerHandler) ControllerHandler
 
@@ -17,10 +13,10 @@ const (
 
 type Controller struct {
 	handlers  map[EventType]ControllerHandler
-	GameState *State
+	GameState *Session
 }
 
-func NewController(state *State) *Controller {
+func NewController(state *Session) *Controller {
 	return &Controller{
 		handlers:  make(map[EventType]ControllerHandler),
 		GameState: state,
@@ -34,9 +30,9 @@ func (c *Controller) AddHandler(eventType EventType, handler ControllerHandler, 
 	c.handlers[eventType] = handler
 }
 
-func (c *Controller) ExecuteHandlers(eventType EventType, ctx *models.Context) {
+func (c *Controller) ExecuteHandlers(eventType EventType, state *Session) {
 	handler := c.handlers[eventType]
 	if handler != nil {
-		handler(ctx, c)
+		handler(state, c)
 	}
 }

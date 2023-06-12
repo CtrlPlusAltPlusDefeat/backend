@@ -26,18 +26,18 @@ type Chat struct {
 }
 
 type Details struct {
-	Players  []Player `json:"players"`
-	LobbyId  string   `json:"lobbyId"`
-	Settings Encoded  `json:"settings"`
-	InGame   bool     `json:"inGame"`
-	GameId   string   `json:"gameId"`
+	Players       []Player `json:"players"`
+	LobbyId       string   `json:"lobbyId"`
+	Settings      Encoded  `json:"settings"`
+	InGame        bool     `json:"inGame"`
+	GameSessionId string   `json:"gameSessionId"`
 }
 
 type Lobby struct {
-	LobbyId  string  `json:"lobbyId" dynamodbav:"LobbyId"`
-	Settings Encoded `json:"settings" dynamodbav:"Settings"`
-	InGame   bool    `json:"inGame" dynamodbav:"InGame"`
-	GameId   string  `json:"gameId" dynamodbav:"GameId"`
+	LobbyId       string  `json:"lobbyId" dynamodbav:"LobbyId"`
+	Settings      Encoded `json:"settings" dynamodbav:"Settings"`
+	InGame        bool    `json:"inGame" dynamodbav:"InGame"`
+	GameSessionId string  `json:"gameSessionId" dynamodbav:"GameSessionId"`
 }
 
 type Settings struct {

@@ -1,10 +1,15 @@
 package game
 
-import "backend/pkg/models"
+func (g *Session) SetNextTurn() *Session {
+	currentTurnIndex := g.Teams.GetIndex(g.State.CurrentTurn)
+	if currentTurnIndex == -1 {
+		return g
+	}
 
-type Session struct {
-	LobbyId       string    `dynamodbav:"LobbyId" json:"lobbyId"`
-	GameSessionId string    `dynamodbav:"GameSessionId" json:"gameSessionId"`
-	GameTypeId    models.Id `dynamodbav:"GameTypeId" json:"gameTypeId"`
-	GameState     *State    `dynamodbav:"-" json:"gameState"`
+	if currentTurnIndex == len(g.Teams)-1 {
+		g.State.CurrentTurn = g.Teams[0].Name
+	} else {
+		g.State.CurrentTurn = g.Teams[currentTurnIndex+1].Name
+	}
+	return g
 }

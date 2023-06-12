@@ -3,13 +3,14 @@ package services
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/models/context"
 	"backend/pkg/models/game"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
 	"log"
 )
 
-func CreateLobby(context *models.Context, data *models.Data) error {
+func CreateLobby(context *context.Context, data *models.Data) error {
 	req := models.CreateAndJoinRequest{}
 	err := data.DecodeTo(&req)
 
@@ -30,7 +31,7 @@ func CreateLobby(context *models.Context, data *models.Data) error {
 	return join(context, req.Name, true)
 }
 
-func JoinLobby(context *models.Context, data *models.Data) error {
+func JoinLobby(context *context.Context, data *models.Data) error {
 	req := models.CreateAndJoinRequest{}
 	err := data.DecodeTo(&req)
 
@@ -41,7 +42,7 @@ func JoinLobby(context *models.Context, data *models.Data) error {
 	return join(context, req.Name, false)
 }
 
-func join(context *models.Context, name string, isAdmin bool) error {
+func join(context *context.Context, name string, isAdmin bool) error {
 	player, err := db.LobbyPlayer.Add(context.LobbyId(), context.SessionId(), context.ConnectionId(), name, isAdmin)
 
 	if err != nil {
@@ -54,7 +55,7 @@ func join(context *models.Context, name string, isAdmin bool) error {
 		return err
 	}
 
-	err = ws.Send(context, models.JoinedLobby(), models.GetResponse{Player: player, Lobby: models.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameId: context.Lobby().GameId}})
+	err = ws.Send(context, models.JoinedLobby(), models.GetResponse{Player: player, Lobby: models.Details{Players: players, LobbyId: *context.LobbyId(), Settings: context.Lobby().Settings, InGame: context.Lobby().InGame, GameSessionId: context.Lobby().GameSessionId}})
 
 	if err != nil {
 		return err
@@ -63,7 +64,7 @@ func join(context *models.Context, name string, isAdmin bool) error {
 	return ws.SendToLobby(context, models.PlayerJoined(), models.PlayerJoinResponse{Player: player})
 }
 
-func LeaveLobby(context *models.Context, data *models.Data) error {
+func LeaveLobby(context *context.Context, data *models.Data) error {
 	player, err := db.LobbyPlayer.UpdateOnline(context.LobbyId(), context.SessionId(), false)
 
 	if err != nil {
@@ -74,7 +75,7 @@ func LeaveLobby(context *models.Context, data *models.Data) error {
 }
 
 // LoadGame - This function is called when the host clicks the start game button. It will move the lobby into the selected game in prematch state
-func LoadGame(context *models.Context, data *models.Data) error {
+func LoadGame(context *context.Context, data *models.Data) error {
 	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
 
 	settings, err := context.Lobby().Settings.Decode()
@@ -87,20 +88,23 @@ func LoadGame(context *models.Context, data *models.Data) error {
 	teams, err := RandomlyAssignTeams(context.Lobby(), players)
 
 	gameSession, err := db.GameSession.Add(&game.Session{
-		LobbyId:       *context.LobbyId(),
-		GameSessionId: uuid.New().String(),
-		GameTypeId:    settings.GameId,
-		GameState:     game.NewGameState(teams),
+		Info: &game.SessionInfo{
+			LobbyId:       *context.LobbyId(),
+			GameSessionId: uuid.New().String(),
+			GameTypeId:    settings.GameId,
+		},
+		State: game.NewGameState(),
+		Teams: teams,
 	})
 	if err != nil {
 		return err
 	}
 
 	updateLobby := models.Lobby{
-		LobbyId:  *context.LobbyId(),
-		Settings: context.Lobby().Settings,
-		InGame:   true,
-		GameId:   gameSession.GameSessionId,
+		LobbyId:       *context.LobbyId(),
+		Settings:      context.Lobby().Settings,
+		InGame:        true,
+		GameSessionId: gameSession.Info.GameSessionId,
 	}
 
 	err = db.Lobby.Update(updateLobby)

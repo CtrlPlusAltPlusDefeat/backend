@@ -3,10 +3,11 @@ package services
 import (
 	"backend/pkg/db"
 	"backend/pkg/models"
+	"backend/pkg/models/context"
 	"backend/pkg/ws"
 )
 
-func SendChat(context *models.Context, data *models.Data) error {
+func SendChat(context *context.Context, data *models.Data) error {
 	req := models.SendChatRequest{}
 	err := data.DecodeTo(&req)
 
@@ -35,7 +36,7 @@ func SendChat(context *models.Context, data *models.Data) error {
 	return nil
 }
 
-func LoadChat(context *models.Context, data *models.Data) error {
+func LoadChat(context *context.Context, data *models.Data) error {
 	req := models.LoadChatRequest{}
 	err := data.DecodeTo(&req)
 
