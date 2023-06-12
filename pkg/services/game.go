@@ -1,6 +1,7 @@
 package services
 
 import (
+	"backend/pkg/db"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
 	"backend/pkg/models/game"
@@ -26,7 +27,16 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.Tea
 }
 
 func PlayerAction(context *context.Context, data *models.Data) error {
-	return ws.SendToLobby(context, context.Route(), game.Session{})
+	session := context.GameSession()
+	session.IncrementState()
+
+	session, err := db.GameSession.Add(context.GameSession())
+
+	if err != nil {
+		return err
+	}
+
+	return ws.SendToLobby(context, context.Route(), session.State)
 }
 
 func GetState(context *context.Context, data *models.Data) error {

@@ -22,13 +22,13 @@ func DisconnectHandler(context context.Context, req *events.APIGatewayWebsocketP
 	if err != nil {
 		return apigateway.Response{}, err
 	}
-	con.ForSession(&connection.SessionId)
+	con = con.ForSession(&connection.SessionId)
 
 	lobbies, err := db.LobbyPlayer.GetLobbiesBySessionId(&connection.SessionId)
 
 	for _, l := range lobbies {
 		if l.IsOnline {
-			con.ForLobby(&models.Lobby{LobbyId: l.LobbyId})
+			con = con.ForLobby(&models.Lobby{LobbyId: l.LobbyId})
 			//error should already be outputted higher up
 			_ = services.LeaveLobby(con, data)
 		}
