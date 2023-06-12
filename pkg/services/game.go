@@ -28,7 +28,7 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.Tea
 
 func PlayerAction(context *context.Context, data *models.Data) error {
 	session := context.GameSession()
-	session.SetNextTurn()
+	session.IncrementState()
 
 	session, err := db.GameSession.Add(context.GameSession())
 
