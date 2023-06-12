@@ -18,7 +18,6 @@ type SessionState struct {
 	CurrentTurn models.TeamName `dynamodbav:"CurrentTurn" json:"currentTurn"`
 	State       models.State    `dynamodbav:"State" json:"state"`
 }
-
 type EncodedGameState string
 
 type Team struct {
