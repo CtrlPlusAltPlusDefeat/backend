@@ -36,7 +36,7 @@ func PlayerAction(context *context.Context, data *models.Data) error {
 		return err
 	}
 
-	return ws.SendToLobby(context, context.Route(), session)
+	return ws.SendToLobby(context, context.Route(), session.State)
 }
 
 func GetState(context *context.Context, data *models.Data) error {
