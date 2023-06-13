@@ -44,7 +44,7 @@ type Settings struct {
 	GameId     Id              `json:"gameId"`
 	MaxPlayers int             `json:"maxPlayers"`
 	Teams      int             `json:"teams"`
-	Other      json.RawMessage `json:"other"`
+	Game       json.RawMessage `json:"game"`
 }
 
 type BaseSettings struct {

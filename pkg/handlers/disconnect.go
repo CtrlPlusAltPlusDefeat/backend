@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	apigateway "backend/pkg/aws-helpers/api-gateway"
 	"backend/pkg/db"
+	apigateway "backend/pkg/helpers/api-gateway"
 	"backend/pkg/models"
 	customCtx "backend/pkg/models/context"
 	"backend/pkg/services"

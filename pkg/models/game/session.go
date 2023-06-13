@@ -5,30 +5,30 @@ import (
 	"fmt"
 )
 
-func (g *Session) IncrementState(player models.Player) error {
-	switch g.State.State {
+func (s *Session) IncrementState(player models.Player) error {
+	switch s.State.State {
 	case models.PreMatch:
 		{
 			if !player.IsAdmin {
 				return fmt.Errorf("player is not an admin")
 			}
 
-			g.State.CurrentTurn = g.Teams.GetRandom().Name
-			g.State.State = models.InProgress
+			s.State.CurrentTurn = s.Teams.GetRandom().Name
+			s.State.State = models.InProgress
 			break
 		}
 	case models.InProgress:
 		{
-			currentTurnIndex := g.Teams.GetIndex(g.State.CurrentTurn)
+			currentTurnIndex := s.Teams.GetIndex(s.State.CurrentTurn)
 
-			if g.Teams[currentTurnIndex].IncludesPlayer(player.Id) == false {
+			if s.Teams[currentTurnIndex].IncludesPlayer(player.Id) == false {
 				return fmt.Errorf("player not apart of current team")
 			}
 
-			if currentTurnIndex == len(g.Teams)-1 {
-				g.State.CurrentTurn = g.Teams[0].Name
+			if currentTurnIndex == len(s.Teams)-1 {
+				s.State.CurrentTurn = s.Teams[0].Name
 			} else {
-				g.State.CurrentTurn = g.Teams[currentTurnIndex+1].Name
+				s.State.CurrentTurn = s.Teams[currentTurnIndex+1].Name
 			}
 
 			break

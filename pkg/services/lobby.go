@@ -5,6 +5,7 @@ import (
 	"backend/pkg/models"
 	"backend/pkg/models/context"
 	"backend/pkg/models/game"
+	"backend/pkg/models/settings"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
 	"log"
@@ -76,25 +77,43 @@ func LeaveLobby(context *context.Context, data *models.Data) error {
 
 // LoadGame - This function is called when the host clicks the start game button. It will move the lobby into the selected game in prematch state
 func LoadGame(context *context.Context, data *models.Data) error {
+	//TODO this needs a refactor, its doing way too much
 	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
 
-	settings, err := context.Lobby().Settings.Decode()
+	lobbySettings, err := context.Lobby().Settings.Decode()
 	if err != nil {
 		return err
 	}
 
 	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
+	if err != nil {
+		return err
+	}
 
 	teams, err := RandomlyAssignTeams(context.Lobby(), players)
+	if err != nil {
+		return err
+	}
+
+	wordGuessSettings, err := settings.GetWordGuess(lobbySettings)
+	if err != nil {
+		return err
+	}
+
+	gState, err := game.NewWordGuessState(wordGuessSettings).Encode()
+	if err != nil {
+		return err
+	}
 
 	gameSession, err := db.GameSession.Add(&game.Session{
 		Info: &game.SessionInfo{
 			LobbyId:       *context.LobbyId(),
 			GameSessionId: uuid.New().String(),
-			GameTypeId:    settings.GameId,
+			GameTypeId:    lobbySettings.GameId,
 		},
 		State: game.NewGameState(),
 		Teams: teams,
+		Game:  gState,
 	})
 	if err != nil {
 		return err

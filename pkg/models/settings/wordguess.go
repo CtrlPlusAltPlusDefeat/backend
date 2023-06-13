@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 )
 
-type Settings models.Settings
-
 type WordGuessSettings struct {
 	BlackCards int `json:"BlackCards"`
 	WhiteCards int `json:"WhiteCards"`
@@ -15,18 +13,22 @@ type WordGuessSettings struct {
 func GetDefaultWordGuess() *models.Settings {
 	settings := models.GetDefaultSettings(12, models.WordGuess)
 	settings.Teams = 2
-	settings.Other, _ = json.Marshal(WordGuessSettings{
-		BlackCards: 10,
-		WhiteCards: 10,
+	settings.Game, _ = json.Marshal(WordGuessSettings{
+		BlackCards: 5,
+		WhiteCards: 15,
 	})
 	return settings
 }
 
-func (s *Settings) GetWordGuess() (*WordGuessSettings, error) {
+func GetWordGuess(s *models.Settings) (*WordGuessSettings, error) {
 	settings := WordGuessSettings{}
-	err := json.Unmarshal(s.Other, &settings)
+	err := json.Unmarshal(s.Game, &settings)
 	if err != nil {
 		return nil, err
 	}
 	return &settings, nil
+}
+
+func (w *WordGuessSettings) TotalCards() int {
+	return w.BlackCards + w.WhiteCards
 }

@@ -1,8 +1,8 @@
 package ws
 
 import (
-	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
+	helpers "backend/pkg/helpers"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
 	"encoding/json"
@@ -27,7 +27,7 @@ func getClient(context *context.Context) *apigatewaymanagementapi.Client {
 
 	log.Println("Creating API Gateway client for callback URL: ", callbackURL.String())
 
-	return apigatewaymanagementapi.NewFromConfig(awshelpers.GetConfig(), func(o *apigatewaymanagementapi.Options) {
+	return apigatewaymanagementapi.NewFromConfig(helpers.GetConfig(), func(o *apigatewaymanagementapi.Options) {
 		o.EndpointResolver = apigatewaymanagementapi.EndpointResolverFromURL(callbackURL.String())
 	})
 }

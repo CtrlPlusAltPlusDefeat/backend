@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	apigateway "backend/pkg/aws-helpers/api-gateway"
+	apigateway "backend/pkg/helpers/api-gateway"
 	"backend/pkg/ws"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
