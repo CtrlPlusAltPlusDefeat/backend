@@ -35,7 +35,7 @@ func (t *EncodedTeamArray) Decode() *TeamArray {
 	return &teamArray
 }
 
-func (t Team) IncludesPlayer(id string) bool {
+func (t *Team) IncludesPlayer(id string) bool {
 	for _, x := range t.Players {
 		if x == id {
 			return true
@@ -54,7 +54,7 @@ func (t TeamArray) GetIndex(team models.TeamName) int {
 	return -1
 }
 
-func (t Team) RemovePlayer(id string) {
+func (t *Team) RemovePlayer(id string) {
 	for i, pId := range t.Players {
 		if pId == id {
 			t.Players = append(t.Players[:i], t.Players[i+1:]...)
@@ -62,11 +62,11 @@ func (t Team) RemovePlayer(id string) {
 	}
 }
 
-func (t Team) AddPlayer(id string) {
+func (t *Team) AddPlayer(id string) {
 	t.Players = append(t.Players, id)
 }
 
-func (t TeamArray) SwapTeam(id string, team models.TeamName) {
+func (t TeamArray) SwapTeam(id string, team models.TeamName) TeamArray {
 	for i, x := range t {
 		if x.IncludesPlayer(id) {
 			t[i].RemovePlayer(id)
@@ -74,6 +74,7 @@ func (t TeamArray) SwapTeam(id string, team models.TeamName) {
 	}
 
 	t[t.GetIndex(team)].AddPlayer(id)
+	return t
 }
 
 func (t TeamArray) GetRandom() Team {

@@ -72,7 +72,7 @@ func SwapTeam(context *context.Context, data *models.Data) error {
 		return err
 	}
 
-	session.Teams.SwapTeam(player.Id, req.Team)
+	session.Teams = session.Teams.SwapTeam(player.Id, req.Team)
 	session, err = db.GameSession.Add(context.GameSession())
 
 	return ws.Send(context, context.Route(), session.Teams)
