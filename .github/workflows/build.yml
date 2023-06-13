@@ -32,7 +32,7 @@ jobs:
       - name: Add Word Packs
         run: |
           echo "Adding Word Packs"
-          if [ "$var" = "12" ]; then
+          if [ "${{ matrix.function }}" = "default" ]; then
              cp -R  ./wordpacks ./dist/${{ matrix.function }}/wordpacks
              echo "Done"
           fi
