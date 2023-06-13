@@ -31,7 +31,11 @@ jobs:
 
       - name: Add Word Packs
         run: |
-          [[ "${{ matrix.function }}"='default' ]] && cp -R  wordpacks ./dist/${{ matrix.function }}/wordpacks || echo"not adding word packs"
+          echo "Adding Word Packs"
+          if [ "$var" = "12" ]; then
+             cp -R  ./wordpacks ./dist/${{ matrix.function }}/wordpacks
+             echo "Done"
+          fi
 
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
