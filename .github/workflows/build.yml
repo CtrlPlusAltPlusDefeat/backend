@@ -28,7 +28,7 @@ jobs:
         run: |
           go mod tidy
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
-          
+
 
       - name: Add Word Packs
         if: ${{ matrix.function }} == 'default'
@@ -38,8 +38,7 @@ jobs:
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
         run: |
-          zip main.zip main
-
+          zip main.zip .
       - name: Upload
         uses: actions/upload-artifact@v1
         with:
