@@ -29,7 +29,11 @@ jobs:
           go mod tidy
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
 
-      s
+      - name: Add Word Packs
+        if: ${{ matrix.function }} == 'default'
+        run: |
+          cp wordpacks ./dist/${{ matrix.function }}/wordpacks
+
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
         run: |
