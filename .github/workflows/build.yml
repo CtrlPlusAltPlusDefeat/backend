@@ -38,7 +38,7 @@ jobs:
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
         run: |
-          zip main.zip .
+          zip -r  main.zip .
       - name: Upload
         uses: actions/upload-artifact@v1
         with:
