@@ -31,14 +31,15 @@ jobs:
 
 
       - name: Add Word Packs
-        if: ${{ matrix.function }} == 'default'
+        if: ${{ matrix.function }}='default'
         run: |
           cp -r wordpacks ./dist/${{ matrix.function }}/wordpacks
 
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
         run: |
-          zip main.zip *
+          zip main.zip main, wordpacks
+
       - name: Upload
         uses: actions/upload-artifact@v1
         with:
