@@ -24,5 +24,7 @@ type Team struct {
 	Name    models.TeamName `json:"name"`
 	Players []string        `json:"players"`
 }
+
 type TeamArray []Team
+
 type EncodedTeamArray string

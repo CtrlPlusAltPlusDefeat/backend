@@ -7,14 +7,17 @@ import (
 
 func (g *Session) IncrementState(player models.Player) error {
 	switch g.State.State {
-	case "prematch":
+	case models.PreMatch:
 		{
-			g.State.CurrentTurn = g.Teams[0].Name
-			g.State.State = "inprogress"
+			if !player.IsAdmin {
+				return fmt.Errorf("player is not an admin")
+			}
 
+			g.State.CurrentTurn = g.Teams.GetRandom().Name
+			g.State.State = models.InProgress
 			break
 		}
-	case "inprogress":
+	case models.InProgress:
 		{
 			currentTurnIndex := g.Teams.GetIndex(g.State.CurrentTurn)
 

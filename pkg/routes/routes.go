@@ -31,6 +31,7 @@ func Configure() {
 
 	add("game|get-state", services.GetState, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware, GameSessionMiddleware)
 	add("game|player-action", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware, GameSessionMiddleware)
+	add("game|swap-teams", services.SwapTeam, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware, GameSessionMiddleware)
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {
