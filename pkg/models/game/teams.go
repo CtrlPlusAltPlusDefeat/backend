@@ -3,6 +3,7 @@ package game
 import (
 	"backend/pkg/models"
 	"encoding/json"
+	"math/rand"
 )
 
 func CreateTeams(number int) TeamArray {
@@ -16,14 +17,6 @@ func CreateTeams(number int) TeamArray {
 	return teams
 }
 
-func (t TeamArray) GetIndex(team models.TeamName) int {
-	for i, x := range t {
-		if x.Name == team {
-			return i
-		}
-	}
-	return -1
-}
 func (t TeamArray) Encode() (*EncodedTeamArray, error) {
 	marshaled, err := json.Marshal(t)
 	if err != nil {
@@ -50,4 +43,39 @@ func (t Team) IncludesPlayer(id string) bool {
 	}
 
 	return false
+}
+
+func (t TeamArray) GetIndex(team models.TeamName) int {
+	for i, x := range t {
+		if x.Name == team {
+			return i
+		}
+	}
+	return -1
+}
+
+func (t Team) RemovePlayer(id string) {
+	for i, pId := range t.Players {
+		if pId == id {
+			t.Players = append(t.Players[:i], t.Players[i+1:]...)
+		}
+	}
+}
+
+func (t Team) AddPlayer(id string) {
+	t.Players = append(t.Players, id)
+}
+
+func (t TeamArray) SwapTeam(id string, team models.TeamName) {
+	for i, x := range t {
+		if x.IncludesPlayer(id) {
+			t[i].RemovePlayer(id)
+		}
+	}
+
+	t[t.GetIndex(team)].AddPlayer(id)
+}
+
+func (t TeamArray) GetRandom() Team {
+	return t[(rand.Intn(len(t)))]
 }

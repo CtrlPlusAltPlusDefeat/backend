@@ -15,3 +15,7 @@ type SessionUseRequest struct {
 type CreateAndJoinRequest struct {
 	Name string `json:"name"`
 }
+
+type SwapTeamRequest struct {
+	Team TeamName `json:"team"` //the team to change to
+}

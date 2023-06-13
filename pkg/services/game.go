@@ -53,3 +53,22 @@ func PlayerAction(context *context.Context, data *models.Data) error {
 func GetState(context *context.Context, data *models.Data) error {
 	return ws.Send(context, context.Route(), context.GameSession())
 }
+
+func SwapTeam(context *context.Context, data *models.Data) error {
+	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
+	if err != nil {
+		return err
+	}
+	session := context.GameSession()
+
+	req := models.SwapTeamRequest{}
+	err = data.DecodeTo(&req)
+	if err != nil {
+		return err
+	}
+
+	session.Teams.SwapTeam(player.Id, req.Team)
+	session, err = db.GameSession.Add(context.GameSession())
+
+	return ws.Send(context, context.Route(), session.Teams)
+}
