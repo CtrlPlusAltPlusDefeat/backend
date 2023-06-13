@@ -1,9 +1,9 @@
 name: Build
 
 on:
- pull_request:
-  branches:
-   - main
+  pull_request:
+    branches:
+      - main
 
 env:
   GOOS: linux
@@ -29,6 +29,7 @@ jobs:
           go mod tidy
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o "./dist/${{ matrix.function }}/main" "./pkg/${{ matrix.function }}-main.go"
 
+      s
       - name: Zip
         working-directory: ./dist/${{ matrix.function }}
         run: |
