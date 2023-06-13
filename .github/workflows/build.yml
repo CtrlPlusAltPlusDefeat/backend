@@ -33,7 +33,7 @@ jobs:
         run: |
           echo "Adding Word Packs"
           if [ "${{ matrix.function }}" = "default" ]; then
-             cp -R  ./wordpacks ./dist/${{ matrix.function }}/wordpacks
+             cp -Rvp  ./wordpacks/* ./dist/${{ matrix.function }}/wordpacks
              echo "Done"
           fi
 
