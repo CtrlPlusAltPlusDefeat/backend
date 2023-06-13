@@ -6,6 +6,7 @@ import (
 	"backend/pkg/models/context"
 	"backend/pkg/models/game"
 	"backend/pkg/ws"
+	"fmt"
 )
 
 func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.TeamArray, error) {
@@ -55,11 +56,15 @@ func GetState(context *context.Context, data *models.Data) error {
 }
 
 func SwapTeam(context *context.Context, data *models.Data) error {
+	session := context.GameSession()
+	if session.State.State != models.PreMatch {
+		return fmt.Errorf("cannot swap teams when not in %s", models.PreMatch)
+	}
+
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
 	if err != nil {
 		return err
 	}
-	session := context.GameSession()
 
 	req := models.SwapTeamRequest{}
 	err = data.DecodeTo(&req)
