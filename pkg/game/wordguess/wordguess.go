@@ -2,6 +2,7 @@ package wordguess
 
 import (
 	"backend/pkg/game"
+	"backend/pkg/models"
 	"encoding/json"
 )
 
@@ -15,8 +16,12 @@ func (w *State) Encode() ([]byte, error) {
 	return json.Marshal(w)
 }
 
-func New(teams game.TeamArray, settings *Settings) (game.TeamArray, []byte, error) {
-	gState, err := newState(settings).Encode()
+func Setup(teams game.TeamArray, settings *models.Settings) (game.TeamArray, []byte, error) {
+	wordGuessSettings, err := GetSettings(settings)
+	if err != nil {
+		return nil, nil, err
+	}
+	gState, err := newState(wordGuessSettings).Encode()
 	if err != nil {
 		return nil, nil, err
 	}
