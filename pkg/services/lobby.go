@@ -2,10 +2,10 @@ package services
 
 import (
 	"backend/pkg/db"
+	game "backend/pkg/game"
 	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
-	"backend/pkg/models/game"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
 	"log"

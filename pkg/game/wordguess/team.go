@@ -1,8 +1,8 @@
 package wordguess
 
 import (
+	"backend/pkg/game"
 	"backend/pkg/models"
-	"backend/pkg/models/game"
 	"encoding/json"
 )
 
