@@ -2,10 +2,10 @@ package services
 
 import (
 	"backend/pkg/db"
+	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
 	"backend/pkg/models/game"
-	"backend/pkg/models/settings"
 	"backend/pkg/ws"
 	"github.com/google/uuid"
 	"log"
@@ -77,7 +77,8 @@ func LeaveLobby(context *context.Context, data *models.Data) error {
 
 // LoadGame - This function is called when the host clicks the start game button. It will move the lobby into the selected game in prematch state
 func LoadGame(context *context.Context, data *models.Data) error {
-	//TODO this needs a refactor, its doing way too much
+	//TODO this needs a refactor, its doing way too much. Some of this should be moved to the game/wordguess package. then we can return generic stuff to here
+	// this should not be doing Game specific stuff. this should just route to the specific game package
 	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
 
 	lobbySettings, err := context.Lobby().Settings.Decode()
@@ -90,17 +91,17 @@ func LoadGame(context *context.Context, data *models.Data) error {
 		return err
 	}
 
+	wordGuessSettings, err := wordguess.GetSettings(lobbySettings)
+	if err != nil {
+		return err
+	}
+
 	teams, err := RandomlyAssignTeams(context.Lobby(), players)
 	if err != nil {
 		return err
 	}
 
-	wordGuessSettings, err := settings.GetWordGuess(lobbySettings)
-	if err != nil {
-		return err
-	}
-
-	gState, err := game.NewWordGuessState(wordGuessSettings).Encode()
+	teams, gState, err := wordguess.New(teams, wordGuessSettings)
 	if err != nil {
 		return err
 	}

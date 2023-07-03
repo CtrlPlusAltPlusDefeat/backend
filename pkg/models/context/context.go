@@ -44,6 +44,14 @@ func (c *Context) Lobby() *models.Lobby {
 	return c.lobby
 }
 
+func (c *Context) GameId() int {
+	settings, err := c.lobby.Settings.Decode()
+	if err != nil {
+		return -1
+	}
+	return int(settings.GameId)
+}
+
 func (c *Context) Route() *models.Route {
 	return c.route
 }

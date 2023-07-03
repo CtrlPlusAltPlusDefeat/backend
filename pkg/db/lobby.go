@@ -1,8 +1,8 @@
 package db
 
 import (
+	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
-	"backend/pkg/models/settings"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -73,7 +73,7 @@ func (l *lobbydb) Update(lobby models.Lobby) error {
 
 func (l *lobbydb) Add(lobbyId *string) error {
 
-	lobbySettings, err := settings.GetDefaultWordGuess().Encode()
+	lobbySettings, err := wordguess.GetDefaultSettings().Encode()
 	if err != nil {
 		return err
 	}

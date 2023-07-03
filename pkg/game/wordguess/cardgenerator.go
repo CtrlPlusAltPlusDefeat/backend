@@ -1,8 +1,6 @@
-package game
+package wordguess
 
 import (
-	"backend/pkg/models/settings"
-	"encoding/json"
 	"log"
 	"math/rand"
 	"os"
@@ -10,6 +8,8 @@ import (
 )
 
 type CardColour string
+
+type Words []string
 
 const (
 	Red    CardColour = "red"
@@ -24,12 +24,6 @@ type CardPosition struct {
 	Y int `json:"y"`
 }
 
-type WordGuessState struct {
-	Cards   [][]*Card `json:"cards"`
-	XLength int       `json:"xLength"`
-	YLength int       `json:"yLength"`
-}
-
 type Card struct {
 	Word     string     `json:"word"`
 	Colour   CardColour `json:"colour"`
@@ -37,45 +31,11 @@ type Card struct {
 }
 
 type cardGenerator struct {
-	settings      *settings.WordGuessSettings
+	settings      *Settings
 	cardCount     map[CardColour]int
 	blackCards    int
 	whiteCards    int
 	colouredCards int
-}
-
-func (w *WordGuessState) Encode() ([]byte, error) {
-	return json.Marshal(w)
-}
-
-func (s *Session) GetWordGuess() (*WordGuessState, error) {
-	state := WordGuessState{}
-	err := json.Unmarshal(s.Game, &state)
-	if err != nil {
-		return nil, err
-	}
-	return &state, nil
-}
-
-func NewWordGuessState(settings *settings.WordGuessSettings) *WordGuessState {
-	xLen := getBoardWidth(settings.TotalCards())
-	yLen := settings.TotalCards() / xLen
-	state := WordGuessState{
-		XLength: xLen,
-		YLength: yLen,
-		Cards:   make([][]*Card, settings.TotalCards()),
-	}
-
-	generateCards := &cardGenerator{
-		settings:      settings,
-		cardCount:     make(map[CardColour]int, 0),
-		blackCards:    settings.BlackCards,
-		whiteCards:    settings.WhiteCards,
-		colouredCards: settings.ColouredCards,
-	}
-
-	state.Cards = generateCards.Generate(xLen, yLen)
-	return &state
 }
 
 func getBoardWidth(totalCards int) int {
@@ -93,7 +53,7 @@ func getBoardWidth(totalCards int) int {
 	return factor
 }
 
-func loadWords() ([]string, error) {
+func loadWords() (*Words, error) {
 	wd, _ := os.Getwd()
 	filepath := wd + "/wordpacks/pack1.txt"
 
@@ -103,8 +63,8 @@ func loadWords() ([]string, error) {
 		return nil, err
 	}
 
-	words := strings.Split(strings.ReplaceAll(string(contents), "\r\n", "\n"), "\n")
-	return words, nil
+	words := Words(strings.Split(strings.ReplaceAll(string(contents), "\r\n", "\n"), "\n"))
+	return &words, nil
 }
 
 func (cg *cardGenerator) Generate(yLen int, xLen int) [][]*Card {
@@ -119,7 +79,7 @@ func (cg *cardGenerator) Generate(yLen int, xLen int) [][]*Card {
 			Cards[y][x] = &Card{
 				Colour:   cg.getColour(),
 				Revealed: false,
-				Word:     words[rand.Intn(len(words))],
+				Word:     words.GetRandom(),
 			}
 		}
 	}
@@ -152,14 +112,11 @@ func (cg *cardGenerator) getColour() CardColour {
 	return colour
 }
 
-func (w *WordGuessState) HideCardColours() *WordGuessState {
-	//iterate over cards and hide colours
-	for y := 0; y < len(w.Cards); y++ {
-		for x := 0; x < len(w.Cards[y]); x++ {
-			if !w.Cards[y][x].Revealed {
-				w.Cards[y][x].Colour = Hidden
-			}
-		}
-	}
-	return w
+func (w *Words) GetRandom() string {
+	words := *w
+	index := rand.Intn(len(words))
+	word := words[index]
+	//remove word from array
+	*w = append(words[:index], words[index+1:]...)
+	return word
 }
