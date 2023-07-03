@@ -27,7 +27,12 @@ type EncodedGameState string
 
 type Team struct {
 	Name    models.TeamName `json:"name"`
-	Players []string        `json:"players"`
+	Players []TeamPlayer    `json:"players"`
+}
+
+type TeamPlayer struct {
+	Id   string          `json:"id"`
+	Data json.RawMessage `json:"data"`
 }
 
 type TeamArray []Team
