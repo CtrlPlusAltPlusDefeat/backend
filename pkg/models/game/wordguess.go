@@ -95,12 +95,7 @@ func getBoardWidth(totalCards int) int {
 
 func loadWords() ([]string, error) {
 	wd, _ := os.Getwd()
-	var filepath string
-	if os.Getenv("LOCAL_WEBSOCKET_SERVER") == "1" {
-		filepath = wd + "/wordpacks/pack1.txt"
-	} else {
-		filepath = wd + "./wordpacks/pack1.txt"
-	}
+	filepath := wd + "/wordpacks/pack1.txt"
 
 	contents, err := os.ReadFile(filepath)
 	log.Printf("Loading words from %v", contents)
