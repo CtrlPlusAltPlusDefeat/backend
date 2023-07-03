@@ -2,6 +2,7 @@ package services
 
 import (
 	"backend/pkg/db"
+	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
 	"backend/pkg/models/game"
@@ -60,20 +61,21 @@ func SwapTeam(context *context.Context, data *models.Data) error {
 	if session.State.State != models.PreMatch {
 		return fmt.Errorf("cannot swap teams when not in %s", models.PreMatch)
 	}
-
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
+
 	if err != nil {
 		return err
 	}
 
-	req := models.SwapTeamRequest{}
-	err = data.DecodeTo(&req)
+	switch models.Id(context.GameId()) {
+	case models.WordGuess:
+		session.Teams, err = wordguess.HandleSwapTeam(session, data, player)
+		break
+	}
 	if err != nil {
 		return err
 	}
 
-	session.Teams = session.Teams.SwapTeam(player.Id, req.Team)
-	session, err = db.GameSession.Add(context.GameSession())
-
+	session, err = db.GameSession.Add(session)
 	return ws.Send(context, context.Route(), session.Teams)
 }

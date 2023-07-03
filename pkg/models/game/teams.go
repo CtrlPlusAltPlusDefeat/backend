@@ -35,7 +35,17 @@ func (t *EncodedTeamArray) Decode() *TeamArray {
 	return &teamArray
 }
 
-func (t *Team) IncludesPlayer(id string) *TeamPlayer {
+func (t *Team) GetPlayerIndex(id string) int {
+	for i, x := range t.Players {
+		if x.Id == id {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func (t *Team) GetPlayer(id string) *TeamPlayer {
 	for _, x := range t.Players {
 		if x.Id == id {
 			return &x
@@ -69,7 +79,7 @@ func (t *Team) AddPlayer(p TeamPlayer) {
 func (t TeamArray) SwapTeam(id string, team models.TeamName) TeamArray {
 	var p *TeamPlayer
 	for i, x := range t {
-		p = x.IncludesPlayer(id)
+		p = x.GetPlayer(id)
 		if p != nil {
 			t[i].RemovePlayer(id)
 			break
@@ -82,4 +92,8 @@ func (t TeamArray) SwapTeam(id string, team models.TeamName) TeamArray {
 
 func (t TeamArray) GetRandom() Team {
 	return t[(rand.Intn(len(t)))]
+}
+
+func (p *TeamPlayer) DecodeTo(req interface{}) error {
+	return json.Unmarshal(p.Data, req)
 }

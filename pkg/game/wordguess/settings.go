@@ -1,20 +1,20 @@
-package settings
+package wordguess
 
 import (
 	"backend/pkg/models"
 	"encoding/json"
 )
 
-type WordGuessSettings struct {
+type Settings struct {
 	BlackCards    int `json:"blackCards"`
 	WhiteCards    int `json:"whiteCards"`
 	ColouredCards int `json:"colouredCards"`
 }
 
-func GetDefaultWordGuess() *models.Settings {
+func GetDefaultSettings() *models.Settings {
 	settings := models.GetDefaultSettings(12, models.WordGuess)
 	settings.Teams = 2
-	settings.Game, _ = json.Marshal(WordGuessSettings{
+	settings.Game, _ = json.Marshal(Settings{
 		//black card ends the game instantly
 		BlackCards: 1,
 		//white card don't give scored
@@ -25,8 +25,8 @@ func GetDefaultWordGuess() *models.Settings {
 	return settings
 }
 
-func GetWordGuess(s *models.Settings) (*WordGuessSettings, error) {
-	settings := WordGuessSettings{}
+func GetSettings(s *models.Settings) (*Settings, error) {
+	settings := Settings{}
 	err := json.Unmarshal(s.Game, &settings)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func GetWordGuess(s *models.Settings) (*WordGuessSettings, error) {
 	return &settings, nil
 }
 
-func (w *WordGuessSettings) TotalCards() int {
+func (w *Settings) TotalCards() int {
 	//2 times and each team must have the same number of cards
 	return w.BlackCards + w.WhiteCards + (w.ColouredCards * 2)
 }

@@ -21,7 +21,7 @@ func (s *Session) IncrementState(player models.Player) error {
 		{
 			currentTurnIndex := s.Teams.GetIndex(s.State.CurrentTurn)
 
-			if s.Teams[currentTurnIndex].IncludesPlayer(player.Id) == nil {
+			if s.Teams[currentTurnIndex].GetPlayer(player.Id) == nil {
 				return fmt.Errorf("player not apart of current team")
 			}
 
