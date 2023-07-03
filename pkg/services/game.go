@@ -17,7 +17,7 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.Tea
 	teams := game.CreateTeams(settings.Teams)
 
 	for i := 0; i < len(players); i++ {
-		teams[i%len(teams)].Players = append(teams[i%len(teams)].Players, players[i].Id)
+		teams[i%len(teams)].Players = append(teams[i%len(teams)].Players, game.TeamPlayer{Id: players[i].Id})
 	}
 
 	for i := range teams {

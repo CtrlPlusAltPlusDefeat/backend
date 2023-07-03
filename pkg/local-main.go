@@ -1,9 +1,9 @@
 package main
 
 import (
-	awshelpers "backend/pkg/aws-helpers"
 	"backend/pkg/db"
 	"backend/pkg/handlers"
+	"backend/pkg/helpers"
 	"backend/pkg/routes"
 	"backend/pkg/ws"
 	"context"
@@ -27,7 +27,7 @@ func init() {
 	_ = os.Setenv("LOCAL_WEBSOCKET_SERVER", "1")
 	_ = os.Setenv("DYNAMO_DB_URL", "http://localhost:8000")
 
-	dbClient := dynamodb.NewFromConfig(awshelpers.GetConfig())
+	dbClient := dynamodb.NewFromConfig(helpers.GetConfig())
 	db.DynamoDb = dbClient
 	routes.Configure()
 }

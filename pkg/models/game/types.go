@@ -1,11 +1,15 @@
 package game
 
-import "backend/pkg/models"
+import (
+	"backend/pkg/models"
+	"encoding/json"
+)
 
 type Session struct {
-	Info  *SessionInfo  `dynamodbav:"-" json:"info"`
-	State *SessionState `dynamodbav:"-" json:"state"`
-	Teams TeamArray     `dynamodbav:"-" json:"teams"`
+	Info  *SessionInfo    `dynamodbav:"-" json:"info"`
+	State *SessionState   `dynamodbav:"-" json:"state"`
+	Teams TeamArray       `dynamodbav:"-" json:"teams"`
+	Game  json.RawMessage `dynamodbav:"-" json:"game"`
 }
 
 type SessionInfo struct {
@@ -18,11 +22,17 @@ type SessionState struct {
 	CurrentTurn models.TeamName `dynamodbav:"CurrentTurn" json:"currentTurn"`
 	State       models.State    `dynamodbav:"State" json:"state"`
 }
+
 type EncodedGameState string
 
 type Team struct {
 	Name    models.TeamName `json:"name"`
-	Players []string        `json:"players"`
+	Players []TeamPlayer    `json:"players"`
+}
+
+type TeamPlayer struct {
+	Id   string          `json:"id"`
+	Data json.RawMessage `json:"data"`
 }
 
 type TeamArray []Team

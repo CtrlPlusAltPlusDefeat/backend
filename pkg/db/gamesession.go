@@ -3,6 +3,7 @@ package db
 import (
 	"backend/pkg/models/game"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -19,7 +20,7 @@ type gamedb struct {
 var GameSession = gamedb{table: "GameSession"}
 
 func (g *gamedb) Get(lobbyId *string, gameSessionId *string) (*game.Session, error) {
-	var gState game.SessionState
+	var state game.SessionState
 	var gInfo game.SessionInfo
 
 	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{
@@ -40,7 +41,8 @@ func (g *gamedb) Get(lobbyId *string, gameSessionId *string) (*game.Session, err
 	}
 
 	teamsJson := game.EncodedTeamArray(item.Item["Teams"].(*types.AttributeValueMemberS).Value)
-	err = attributevalue.UnmarshalMap(item.Item, &gState)
+	gState := game.EncodedTeamArray(item.Item["Game"].(*types.AttributeValueMemberS).Value)
+	err = attributevalue.UnmarshalMap(item.Item, &state)
 	if err != nil {
 		log.Printf("Error unmarshalling state.GameState: %s", err)
 		return nil, err
@@ -52,9 +54,10 @@ func (g *gamedb) Get(lobbyId *string, gameSessionId *string) (*game.Session, err
 	}
 
 	return &game.Session{
-		State: &gState,
+		State: &state,
 		Info:  &gInfo,
 		Teams: *teamsJson.Decode(),
+		Game:  json.RawMessage(gState),
 	}, nil
 }
 
@@ -73,6 +76,7 @@ func (g *gamedb) Add(sessions *game.Session) (*game.Session, error) {
 			"State":         &types.AttributeValueMemberS{Value: string(sessions.State.State)},
 			"CurrentTurn":   &types.AttributeValueMemberS{Value: string(sessions.State.CurrentTurn)},
 			"Teams":         &types.AttributeValueMemberS{Value: string(*encoded)},
+			"Game":          &types.AttributeValueMemberS{Value: string(sessions.Game)},
 		},
 	})
 

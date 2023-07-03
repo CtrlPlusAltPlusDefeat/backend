@@ -11,7 +11,7 @@ func CreateTeams(number int) TeamArray {
 	for i := 0; i < number; i++ {
 		teams = append(teams, Team{
 			Name:    models.GetTeamName(i),
-			Players: make([]string, 0),
+			Players: make([]TeamPlayer, 0),
 		})
 	}
 	return teams
@@ -35,14 +35,14 @@ func (t *EncodedTeamArray) Decode() *TeamArray {
 	return &teamArray
 }
 
-func (t *Team) IncludesPlayer(id string) bool {
+func (t *Team) IncludesPlayer(id string) *TeamPlayer {
 	for _, x := range t.Players {
-		if x == id {
-			return true
+		if x.Id == id {
+			return &x
 		}
 	}
 
-	return false
+	return nil
 }
 
 func (t TeamArray) GetIndex(team models.TeamName) int {
@@ -55,25 +55,28 @@ func (t TeamArray) GetIndex(team models.TeamName) int {
 }
 
 func (t *Team) RemovePlayer(id string) {
-	for i, pId := range t.Players {
-		if pId == id {
+	for i, p := range t.Players {
+		if p.Id == id {
 			t.Players = append(t.Players[:i], t.Players[i+1:]...)
 		}
 	}
 }
 
-func (t *Team) AddPlayer(id string) {
-	t.Players = append(t.Players, id)
+func (t *Team) AddPlayer(p TeamPlayer) {
+	t.Players = append(t.Players, p)
 }
 
 func (t TeamArray) SwapTeam(id string, team models.TeamName) TeamArray {
+	var p *TeamPlayer
 	for i, x := range t {
-		if x.IncludesPlayer(id) {
+		p = x.IncludesPlayer(id)
+		if p != nil {
 			t[i].RemovePlayer(id)
+			break
 		}
 	}
 
-	t[t.GetIndex(team)].AddPlayer(id)
+	t[t.GetIndex(team)].AddPlayer(*p)
 	return t
 }
 

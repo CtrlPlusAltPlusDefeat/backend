@@ -1,4 +1,4 @@
-package aws_helpers
+package helpers
 
 import (
 	"context"

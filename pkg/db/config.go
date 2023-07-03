@@ -1,7 +1,7 @@
 package db
 
 import (
-	helpers "backend/pkg/aws-helpers"
+	"backend/pkg/helpers"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
