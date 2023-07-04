@@ -43,13 +43,10 @@ func SendToLobby(context *context.Context, route *models.Route, message interfac
 
 	for index, p := range players {
 		log.Println("Sending to player ", index)
-		//should run in parallel
-		go func(connId *string) {
-			sendErr := Send(context.ForConnection(connId), route, message)
-			if sendErr != nil {
-				log.Printf("sendToLobby error sending to %s ", *connId)
-			}
-		}(&p.ConnectionId)
+		sendErr := Send(context.ForConnection(&p.ConnectionId), route, message)
+		if sendErr != nil {
+			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
+		}
 	}
 
 	return nil
