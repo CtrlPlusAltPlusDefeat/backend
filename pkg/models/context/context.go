@@ -1,8 +1,8 @@
 package context
 
 import (
+	"backend/pkg/game"
 	"backend/pkg/models"
-	"backend/pkg/models/game"
 	"context"
 )
 

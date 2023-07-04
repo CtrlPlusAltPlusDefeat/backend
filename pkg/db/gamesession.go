@@ -1,7 +1,7 @@
 package db
 
 import (
-	"backend/pkg/models/game"
+	"backend/pkg/game"
 	"context"
 	"encoding/json"
 	"fmt"
