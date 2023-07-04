@@ -2,7 +2,7 @@ package services
 
 import (
 	"backend/pkg/db"
-	game "backend/pkg/game"
+	"backend/pkg/game"
 	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
@@ -30,26 +30,27 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.Tea
 
 func PlayerAction(context *context.Context, data *models.Data) error {
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
-
 	if err != nil {
 		return err
 	}
-
 	session := context.GameSession()
 
-	err = session.IncrementState(player)
-
+	ctx := game.NewContext(context.Value(), session, data, &player)
+	switch models.Id(context.GameId()) {
+	case models.WordGuess:
+		session, err = wordguess.HandlePlayerAction(ctx)
+		break
+	}
 	if err != nil {
 		return err
 	}
 
-	session, err = db.GameSession.Add(context.GameSession())
-
+	session, err = db.GameSession.Add(session)
 	if err != nil {
 		return err
 	}
 
-	return ws.SendToLobby(context, context.Route(), session.State)
+	return ws.SendToLobby(context, context.Route(), session)
 }
 
 func GetState(context *context.Context, data *models.Data) error {
@@ -67,9 +68,10 @@ func SwapTeam(context *context.Context, data *models.Data) error {
 		return err
 	}
 
+	ctx := game.NewContext(context.Value(), session, data, &player)
 	switch models.Id(context.GameId()) {
 	case models.WordGuess:
-		session.Teams, err = wordguess.HandleSwapTeam(session, data, player)
+		session.Teams, err = wordguess.HandleSwapTeam(ctx)
 		break
 	}
 	if err != nil {

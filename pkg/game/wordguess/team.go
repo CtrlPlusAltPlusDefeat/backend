@@ -2,7 +2,6 @@ package wordguess
 
 import (
 	"backend/pkg/game"
-	"backend/pkg/models"
 	"encoding/json"
 )
 
@@ -39,17 +38,17 @@ func (p *PlayerData) Encode() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-func HandleSwapTeam(session *game.Session, data *models.Data, player models.Player) (game.TeamArray, error) {
+func HandleSwapTeam(ctx *game.Context) (game.TeamArray, error) {
 	var playerData PlayerData
 	req := SwapTeamRequest{}
-	err := data.DecodeTo(&req)
+	err := ctx.Data().DecodeTo(&req)
 	if err != nil {
 		return nil, err
 	}
-	teams := session.Teams.SwapTeam(player.Id, req.Team)
+	teams := ctx.Session().Teams.SwapTeam(ctx.Player().Id, req.Team)
 
 	tIndex := teams.GetIndex(req.Team)
-	pIndex := teams[tIndex].GetPlayerIndex(player.Id)
+	pIndex := teams[tIndex].GetPlayerIndex(ctx.Player().Id)
 
 	err = teams[tIndex].Players[pIndex].DecodeTo(&playerData)
 	if err != nil {
