@@ -37,30 +37,3 @@ func AddRoleDefaults(teams game.TeamArray) (game.TeamArray, error) {
 func (p *PlayerData) Encode() ([]byte, error) {
 	return json.Marshal(p)
 }
-
-func HandleSwapTeam(ctx *game.Context) (game.TeamArray, error) {
-	var playerData PlayerData
-	req := SwapTeamRequest{}
-	err := ctx.Data().DecodeTo(&req)
-	if err != nil {
-		return nil, err
-	}
-	teams := ctx.Session().Teams.SwapTeam(ctx.Player().Id, req.Team)
-
-	tIndex := teams.GetIndex(req.Team)
-	pIndex := teams[tIndex].GetPlayerIndex(ctx.Player().Id)
-
-	err = teams[tIndex].Players[pIndex].DecodeTo(&playerData)
-	if err != nil {
-		return nil, err
-	}
-
-	playerData.Role = req.Role
-	encodedData, err := playerData.Encode()
-	if err != nil {
-		return nil, err
-	}
-
-	teams[tIndex].Players[pIndex].Data = encodedData
-	return teams, nil
-}

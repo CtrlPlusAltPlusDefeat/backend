@@ -76,17 +76,17 @@ func (t *Team) AddPlayer(p TeamPlayer) {
 	t.Players = append(t.Players, p)
 }
 
-func (t TeamArray) SwapTeam(id string, team models.TeamName) TeamArray {
+func (t TeamArray) SwapTeam(id string, teamName models.TeamName) TeamArray {
 	var p *TeamPlayer
-	for i, x := range t {
-		p = x.GetPlayer(id)
+	for i, team := range t {
+		p = team.GetPlayer(id)
 		if p != nil {
 			t[i].RemovePlayer(id)
 			break
 		}
 	}
 
-	t[t.GetIndex(team)].AddPlayer(*p)
+	t[t.GetIndex(teamName)].AddPlayer(*p)
 	return t
 }
 
@@ -96,4 +96,14 @@ func (t TeamArray) GetRandom() Team {
 
 func (p *TeamPlayer) DecodeTo(req interface{}) error {
 	return json.Unmarshal(p.Data, req)
+}
+
+func (t TeamArray) GetPlayer(id string) *TeamPlayer {
+	for _, team := range t {
+		player := team.GetPlayer(id)
+		if player != nil {
+			return player
+		}
+	}
+	return nil
 }

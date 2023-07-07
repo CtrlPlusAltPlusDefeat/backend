@@ -2,7 +2,6 @@ package game
 
 import (
 	"backend/pkg/models"
-	"context"
 	"encoding/json"
 )
 
@@ -41,10 +40,3 @@ type TeamPlayer struct {
 type TeamArray []Team
 
 type EncodedTeamArray string
-
-type Context struct {
-	value   context.Context
-	session *Session
-	data    *models.Data
-	player  *models.Player
-}

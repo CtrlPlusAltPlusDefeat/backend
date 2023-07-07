@@ -44,7 +44,6 @@ func GetState(s *game.Session) (*State, error) {
 }
 
 func (w *State) HideCardColours() *State {
-	//iterate over cards and hide colours
 	for y := 0; y < len(w.Cards); y++ {
 		for x := 0; x < len(w.Cards[y]); x++ {
 			if !w.Cards[y][x].Revealed {

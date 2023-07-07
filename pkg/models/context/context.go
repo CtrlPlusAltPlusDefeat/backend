@@ -6,6 +6,8 @@ import (
 	"context"
 )
 
+type BeforeSend func(*Context, *models.Player, any) (any, error)
+
 type Context struct {
 	value       context.Context
 	route       *models.Route
@@ -13,6 +15,7 @@ type Context struct {
 	sessionId   *string
 	gameSession *game.Session
 	lobby       *models.Lobby
+	beforeSend  *BeforeSend
 }
 
 type ConnectionContext struct {
@@ -76,6 +79,10 @@ func (c *Context) ConnectionPath() *string {
 	return c.connection.path
 }
 
+func (c *Context) BeforeSend() *BeforeSend {
+	return c.beforeSend
+}
+
 func (c *Context) ForConnection(id *string) *Context {
 	n := c.duplicate()
 	n.connection.id = id
@@ -108,6 +115,12 @@ func (c *Context) ForGameSession(gameSession *game.Session) *Context {
 	n := c.duplicate()
 	n.gameSession = gameSession
 
+	return n
+}
+
+func (c *Context) ForBeforeSend(handler *BeforeSend) *Context {
+	n := c.duplicate()
+	n.beforeSend = handler
 	return n
 }
 

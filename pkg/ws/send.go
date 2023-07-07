@@ -32,7 +32,7 @@ func getClient(context *context.Context) *apigatewaymanagementapi.Client {
 	})
 }
 
-func SendToLobby(context *context.Context, route *models.Route, message interface{}) error {
+func SendToLobby(context *context.Context, route *models.Route, message any) error {
 	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
 
 	if err != nil {
@@ -43,6 +43,15 @@ func SendToLobby(context *context.Context, route *models.Route, message interfac
 
 	for index, p := range players {
 		log.Println("Sending to player ", index)
+
+		beforeSend := context.BeforeSend()
+		if beforeSend != nil {
+			message, err = (*beforeSend)(context, &p, message)
+			if err != nil {
+				log.Printf("error in beforeSend fun %s", err)
+			}
+		}
+
 		sendErr := Send(context.ForConnection(&p.ConnectionId), route, message)
 		if sendErr != nil {
 			log.Printf("sendToLobby error sending to %s ", p.ConnectionId)
