@@ -136,5 +136,6 @@ func (c *Context) duplicate() *Context {
 		gameSession: c.gameSession,
 		sessionId:   c.sessionId,
 		lobby:       c.lobby,
+		beforeSend:  c.beforeSend,
 	}
 }

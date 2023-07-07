@@ -37,7 +37,7 @@ func PlayerAction(context *context.Context, data *models.Data) error {
 	var session *game.Session
 	switch models.Id(context.GameId()) {
 	case models.WordGuess:
-		session, err = wordguess.HandlePlayerAction(context, data, &player)
+		context, session, err = wordguess.HandlePlayerAction(context, data, &player)
 		break
 	}
 	if err != nil {
@@ -58,7 +58,7 @@ func GetState(context *context.Context, data *models.Data) error {
 	var err error
 	switch models.Id(context.GameId()) {
 	case models.WordGuess:
-		session, err = wordguess.HandleGetState(context, data)
+		context, session, err = wordguess.HandleGetState(context, data)
 		break
 	}
 	if err != nil {
@@ -79,7 +79,7 @@ func SwapTeam(context *context.Context, data *models.Data) error {
 
 	switch models.Id(context.GameId()) {
 	case models.WordGuess:
-		session.Teams, err = wordguess.HandleSwapTeam(context, data, &player)
+		context, session.Teams, err = wordguess.HandleSwapTeam(context, data, &player)
 		break
 	}
 	if err != nil {

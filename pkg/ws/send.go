@@ -33,7 +33,12 @@ func getClient(context *context.Context) *apigatewaymanagementapi.Client {
 }
 
 func SendToLobby(context *context.Context, route *models.Route, message any) error {
-	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
+
+	if context.LobbyId() == nil {
+		panic("Attempting to use SendToLobby without a lobbyId in the context")
+	}
+
+	players, err := db.LobbyPlayer.GetPlayers(context.LobbyId())
 
 	if err != nil {
 		return err
@@ -66,6 +71,15 @@ func SendToLobby(context *context.Context, route *models.Route, message any) err
 // Amazon API Gateway endpoint but the disconnect AWS Lambda was not invoked as it is not guaranteed to be invoked when
 // clients disconnect.
 func Send(context *context.Context, route *models.Route, message any) error {
+
+	beforeSend := context.BeforeSend()
+	if beforeSend != nil && context.LobbyId() != nil {
+		player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
+		message, err = (*beforeSend)(context, &player, message)
+		if err != nil {
+			log.Printf("error in beforeSend fun %s", err)
+		}
+	}
 
 	value, _ := json.Marshal(message)
 	wrapper := models.Wrapper{Service: *route.Service(), Action: *route.Action(), Data: string(value)}
