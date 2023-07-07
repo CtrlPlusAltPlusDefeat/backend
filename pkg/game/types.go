@@ -6,7 +6,9 @@ import (
 )
 
 type Session struct {
-	Info  *SessionInfo    `dynamodbav:"-" json:"info"`
+	//this is constant
+	Info *SessionInfo `dynamodbav:"-" json:"info"`
+	//the res is dynamic
 	State *SessionState   `dynamodbav:"-" json:"state"`
 	Teams TeamArray       `dynamodbav:"-" json:"teams"`
 	Game  json.RawMessage `dynamodbav:"-" json:"game"`

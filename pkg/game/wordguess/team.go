@@ -2,7 +2,6 @@ package wordguess
 
 import (
 	"backend/pkg/game"
-	"backend/pkg/models"
 	"encoding/json"
 )
 
@@ -37,31 +36,4 @@ func AddRoleDefaults(teams game.TeamArray) (game.TeamArray, error) {
 
 func (p *PlayerData) Encode() ([]byte, error) {
 	return json.Marshal(p)
-}
-
-func HandleSwapTeam(session *game.Session, data *models.Data, player models.Player) (game.TeamArray, error) {
-	var playerData PlayerData
-	req := SwapTeamRequest{}
-	err := data.DecodeTo(&req)
-	if err != nil {
-		return nil, err
-	}
-	teams := session.Teams.SwapTeam(player.Id, req.Team)
-
-	tIndex := teams.GetIndex(req.Team)
-	pIndex := teams[tIndex].GetPlayerIndex(player.Id)
-
-	err = teams[tIndex].Players[pIndex].DecodeTo(&playerData)
-	if err != nil {
-		return nil, err
-	}
-
-	playerData.Role = req.Role
-	encodedData, err := playerData.Encode()
-	if err != nil {
-		return nil, err
-	}
-
-	teams[tIndex].Players[pIndex].Data = encodedData
-	return teams, nil
 }

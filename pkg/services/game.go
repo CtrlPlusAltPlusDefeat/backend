@@ -2,7 +2,7 @@ package services
 
 import (
 	"backend/pkg/db"
-	game "backend/pkg/game"
+	"backend/pkg/game"
 	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
 	"backend/pkg/models/context"
@@ -30,30 +30,41 @@ func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.Tea
 
 func PlayerAction(context *context.Context, data *models.Data) error {
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
-
 	if err != nil {
 		return err
 	}
 
-	session := context.GameSession()
-
-	err = session.IncrementState(player)
-
+	var session *game.Session
+	switch models.Id(context.GameId()) {
+	case models.WordGuess:
+		session, err = wordguess.HandlePlayerAction(context, data, &player)
+		break
+	}
 	if err != nil {
 		return err
 	}
 
-	session, err = db.GameSession.Add(context.GameSession())
-
+	session, err = db.GameSession.Add(session)
 	if err != nil {
 		return err
 	}
 
-	return ws.SendToLobby(context, context.Route(), session.State)
+	return ws.SendToLobby(context, context.Route(), session)
 }
 
+// GetState this is an expensive call, only use when necessary
 func GetState(context *context.Context, data *models.Data) error {
-	return ws.Send(context, context.Route(), context.GameSession())
+	var session *game.Session
+	var err error
+	switch models.Id(context.GameId()) {
+	case models.WordGuess:
+		session, err = wordguess.HandleGetState(context, data)
+		break
+	}
+	if err != nil {
+		return err
+	}
+	return ws.Send(context, context.Route(), session)
 }
 
 func SwapTeam(context *context.Context, data *models.Data) error {
@@ -62,14 +73,13 @@ func SwapTeam(context *context.Context, data *models.Data) error {
 		return fmt.Errorf("cannot swap teams when not in %s", models.PreMatch)
 	}
 	player, err := db.LobbyPlayer.Get(context.LobbyId(), context.SessionId())
-
 	if err != nil {
 		return err
 	}
 
 	switch models.Id(context.GameId()) {
 	case models.WordGuess:
-		session.Teams, err = wordguess.HandleSwapTeam(session, data, player)
+		session.Teams, err = wordguess.HandleSwapTeam(context, data, &player)
 		break
 	}
 	if err != nil {

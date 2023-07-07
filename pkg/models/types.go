@@ -1,6 +1,8 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Connection struct {
 	ConnectionId string `dynamodbav:"ConnectionId"`

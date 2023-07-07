@@ -77,8 +77,6 @@ func LeaveLobby(context *context.Context, data *models.Data) error {
 
 // LoadGame - This function is called when the host clicks the start game button. It will move the lobby into the selected game in prematch state
 func LoadGame(context *context.Context, data *models.Data) error {
-	//TODO this needs a refactor, its doing way too much. Some of this should be moved to the game/wordguess package. then we can return generic stuff to here
-	// this should not be doing Game specific stuff. this should just route to the specific game package
 	log.Printf("Starting game for lobby '%s'", *context.LobbyId())
 	players, err := db.LobbyPlayer.GetPlayers(&context.Lobby().LobbyId)
 	if err != nil {
