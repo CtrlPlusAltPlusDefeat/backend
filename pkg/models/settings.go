@@ -22,14 +22,11 @@ func (str *Encoded) Decode() (*Settings, error) {
 	return &settings, nil
 }
 
-func (s *Settings) Encode() ([]byte, error) {
-	return json.Marshal(s)
+func (s *Settings) Encode() (Encoded, error) {
+	str, err := json.Marshal(s)
+	return Encoded(str), err
 }
 
-func (s *Settings) GetBaseSettings() *BaseSettings {
-	return &BaseSettings{
-		GameId:     s.GameId,
-		MaxPlayers: s.MaxPlayers,
-		Teams:      s.Teams,
-	}
+func (s *Settings) DecodeTo(i any) error {
+	return json.Unmarshal(s.Game, i)
 }

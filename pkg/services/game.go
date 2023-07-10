@@ -11,11 +11,7 @@ import (
 )
 
 func RandomlyAssignTeams(lobby *models.Lobby, players []models.Player) (game.TeamArray, error) {
-	settings, err := lobby.Settings.Decode()
-	if err != nil {
-		return make([]game.Team, 0), err
-	}
-	teams := game.CreateTeams(settings.Teams)
+	teams := game.CreateTeams(lobby.Settings.Teams)
 
 	for i := 0; i < len(players); i++ {
 		teams[i%len(teams)].Players = append(teams[i%len(teams)].Players, game.TeamPlayer{Id: players[i].Id})

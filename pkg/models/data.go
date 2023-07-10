@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log"
+)
 
 type Data struct {
 	route *Route
@@ -27,7 +30,15 @@ func NewData(request string) (*Data, error) {
 }
 
 func (d *Data) DecodeTo(req interface{}) error {
-	return json.Unmarshal(d.data, req)
+	err := json.Unmarshal(d.data, req)
+	if err != nil {
+		log.Printf("Failed to decode data: %s", d.data)
+	}
+	return err
+}
+
+func (d *Data) Data() string {
+	return string(d.data)
 }
 
 func (d *Data) Route() *Route {
