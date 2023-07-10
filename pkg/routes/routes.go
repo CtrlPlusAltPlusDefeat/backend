@@ -25,6 +25,7 @@ func Configure() {
 	add("lobby|join", services.JoinLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("lobby|leave", services.LeaveLobby, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("lobby|load-game", services.LoadGame, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
+	add("lobby|save-settings", services.SaveSettings, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 
 	add("chat|send", services.SendChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
 	add("chat|load", services.LoadChat, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware)
@@ -32,6 +33,7 @@ func Configure() {
 	add("game|get-state", services.GetState, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware, GameSessionMiddleware)
 	add("game|player-action", services.PlayerAction, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware, GameSessionMiddleware)
 	add("game|swap-teams", services.SwapTeam, ErrorCommunicateMiddleware, SessionMiddleware, LobbyMiddleware, GameSessionMiddleware)
+
 }
 
 func add(route string, handler Handler, middleware ...Middleware) {
@@ -49,7 +51,7 @@ func Execute(context *context.Context, data *models.Data) {
 	if handler, exists := handlers[route]; exists {
 		err := handler(context, data)
 		if err != nil {
-			log.Printf("Error Invoking '%s': %s", route, err)
+			log.Printf("Error Invoking %s: %s", route, err)
 		}
 	} else {
 		log.Printf("Error Invoking '%s': Couldn't find route.", route)

@@ -4,6 +4,7 @@ import (
 	"backend/pkg/game/wordguess"
 	"backend/pkg/models"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -18,8 +19,16 @@ type lobbydb struct {
 
 var Lobby = lobbydb{table: "Lobby"}
 
+type lobbyItem struct {
+	LobbyId       string `dynamodbav:"LobbyId"`
+	Settings      string `dynamodbav:"Settings"`
+	InGame        bool   `dynamodbav:"InGame"`
+	GameSessionId string `dynamodbav:"GameSessionId"`
+}
+
 func (l *lobbydb) Get(lobbyId *string) (models.Lobby, error) {
-	var result models.Lobby
+	var lobby models.Lobby
+	var res lobbyItem
 
 	item, err := DynamoDb.GetItem(context.TODO(), &dynamodb.GetItemInput{TableName: aws.String(l.table),
 		Key: map[string]types.AttributeValue{
@@ -29,24 +38,33 @@ func (l *lobbydb) Get(lobbyId *string) (models.Lobby, error) {
 
 	if err != nil {
 		log.Printf("Couldn't query %s table. Here's why: %v\n", l.table, err)
-		return result, err
+		return lobby, err
 	}
 
 	if len(item.Item) == 0 {
-		return result, fmt.Errorf("lobby not found")
+		return lobby, fmt.Errorf("lobby not found")
 	}
 
-	err = attributevalue.UnmarshalMap(item.Item, &result)
+	err = attributevalue.UnmarshalMap(item.Item, &res)
 	if err != nil {
 		log.Printf("Error unmarshalling lobby.Lobby: %s", err)
-		return result, err
+		return lobby, err
 	}
 
-	return result, nil
+	var settings models.Settings
+	err = json.Unmarshal([]byte(res.Settings), &settings)
+	lobby = models.Lobby{LobbyId: res.LobbyId, Settings: settings, InGame: res.InGame, GameSessionId: res.GameSessionId}
+
+	return lobby, nil
 }
 
-func (l *lobbydb) Update(lobby models.Lobby) error {
-	_, err := DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+func (l *lobbydb) Update(lobby *models.Lobby) error {
+
+	settings, err := lobby.Settings.Encode()
+	if err != nil {
+		return err
+	}
+	_, err = DynamoDb.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(l.table),
 		Key: map[string]types.AttributeValue{
 			"LobbyId": &types.AttributeValueMemberS{Value: lobby.LobbyId},
@@ -57,7 +75,7 @@ func (l *lobbydb) Update(lobby models.Lobby) error {
 			"#GameSessionId": "GameSessionId",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":Settings":      &types.AttributeValueMemberS{Value: string(lobby.Settings)},
+			":Settings":      &types.AttributeValueMemberS{Value: string(settings)},
 			":InGame":        &types.AttributeValueMemberBOOL{Value: lobby.InGame},
 			":GameSessionId": &types.AttributeValueMemberS{Value: lobby.GameSessionId},
 		},

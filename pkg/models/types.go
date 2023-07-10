@@ -1,8 +1,6 @@
 package models
 
-import (
-	"encoding/json"
-)
+import "encoding/json"
 
 type Connection struct {
 	ConnectionId string `dynamodbav:"ConnectionId"`
@@ -30,16 +28,16 @@ type Chat struct {
 type Details struct {
 	Players       []Player `json:"players"`
 	LobbyId       string   `json:"lobbyId"`
-	Settings      Encoded  `json:"settings"`
+	Settings      Settings `json:"settings"`
 	InGame        bool     `json:"inGame"`
 	GameSessionId string   `json:"gameSessionId"`
 }
 
 type Lobby struct {
-	LobbyId       string  `json:"lobbyId" dynamodbav:"LobbyId"`
-	Settings      Encoded `json:"settings" dynamodbav:"Settings"`
-	InGame        bool    `json:"inGame" dynamodbav:"InGame"`
-	GameSessionId string  `json:"gameSessionId" dynamodbav:"GameSessionId"`
+	LobbyId       string   `json:"lobbyId" dynamodbav:"LobbyId"`
+	Settings      Settings `json:"settings" dynamodbav:"Settings"`
+	InGame        bool     `json:"inGame" dynamodbav:"InGame"`
+	GameSessionId string   `json:"gameSessionId" dynamodbav:"GameSessionId"`
 }
 
 type Settings struct {
@@ -47,10 +45,4 @@ type Settings struct {
 	MaxPlayers int             `json:"maxPlayers"`
 	Teams      int             `json:"teams"`
 	Game       json.RawMessage `json:"game"`
-}
-
-type BaseSettings struct {
-	GameId     Id  `json:"gameId"`
-	MaxPlayers int `json:"maxPlayers"`
-	Teams      int `json:"teams"`
 }

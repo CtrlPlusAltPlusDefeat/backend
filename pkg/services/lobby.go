@@ -88,22 +88,17 @@ func LoadGame(context *context.Context, data *models.Data) error {
 		return err
 	}
 
-	lobbySettings, err := context.Lobby().Settings.Decode()
-	if err != nil {
-		return err
-	}
-
 	var gState []byte
 	switch models.Id(context.GameId()) {
 	case models.WordGuess:
-		teams, gState, err = wordguess.Setup(teams, lobbySettings)
+		teams, gState, err = wordguess.Setup(teams, &context.Lobby().Settings)
 	}
 
 	gameSession, err := db.GameSession.Add(&game.Session{
 		Info: &game.SessionInfo{
 			LobbyId:       *context.LobbyId(),
 			GameSessionId: uuid.New().String(),
-			GameTypeId:    lobbySettings.GameId,
+			GameTypeId:    context.Lobby().Settings.GameId,
 		},
 		State: game.NewGameState(),
 		Teams: teams,
@@ -120,10 +115,38 @@ func LoadGame(context *context.Context, data *models.Data) error {
 		GameSessionId: gameSession.Info.GameSessionId,
 	}
 
-	err = db.Lobby.Update(updateLobby)
+	err = db.Lobby.Update(&updateLobby)
 	if err != nil {
 		return err
 	}
 
 	return ws.SendToLobby(context, context.Route(), updateLobby)
+}
+
+func SaveSettings(context *context.Context, data *models.Data) error {
+	settings := &models.Settings{}
+	log.Printf("%s", data.Data())
+	err := data.DecodeTo(settings)
+	if err != nil {
+		return err
+	}
+
+	switch settings.GameId {
+	case models.WordGuess:
+		settings, err = wordguess.SaveSettings(context, settings)
+	}
+	if err != nil {
+		return err
+	}
+
+	context.Lobby().Settings = *settings
+	if err != nil {
+		return err
+	}
+
+	err = db.Lobby.Update(context.Lobby())
+	if err != nil {
+		return err
+	}
+	return ws.SendToLobby(context, context.Route(), context.Lobby().Settings)
 }
