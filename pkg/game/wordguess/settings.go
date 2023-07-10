@@ -32,7 +32,7 @@ func (w *Settings) Encode() ([]byte, error) {
 
 func GetSettings(s *models.Settings) (*Settings, error) {
 	settings := Settings{}
-	err := json.Unmarshal([]byte(s.Game), &settings)
+	err := json.Unmarshal(s.Game, &settings)
 	if err != nil {
 		return nil, err
 	}
