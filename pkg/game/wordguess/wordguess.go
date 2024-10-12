@@ -54,7 +54,7 @@ func (w *State) HideCardColours() *State {
 	return w
 }
 
-func newState(settings *Settings) *State {
+func newState(settings *models.WordGuessSettings) *State {
 	xLen := getBoardWidth(settings.TotalCards())
 	yLen := settings.TotalCards() / xLen
 	state := State{

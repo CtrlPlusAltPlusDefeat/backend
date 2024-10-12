@@ -98,7 +98,7 @@ func HandleGetState(ctx *context.Context, data *models.Data) (*context.Context, 
 
 // SaveSettings this looks like it does nothing, but we check that the settings passed in actual decode into the correct type
 func SaveSettings(ctx *context.Context, settings *models.Settings) (*models.Settings, error) {
-	wgSettings := Settings{}
+	wgSettings := models.WordGuessSettings{}
 	log.Printf("settings: %s", settings.Game)
 	log.Printf("settings: %s", settings.Game)
 	err := settings.DecodeTo(&wgSettings)

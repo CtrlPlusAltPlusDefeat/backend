@@ -1,8 +1,8 @@
 install-air:
-	go install github.com/cosmtrek/air@latest
+	go install github.com/air-verse/air@latest
 
 air:
-	~/.air -c .air.toml
+	air -c .air.toml
 
 build:
 	go build -o ./tmp/main ./pkg/local-main.go

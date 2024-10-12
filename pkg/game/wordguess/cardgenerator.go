@@ -1,6 +1,7 @@
 package wordguess
 
 import (
+	"backend/pkg/models"
 	"log"
 	"math/rand"
 	"os"
@@ -31,7 +32,7 @@ type Card struct {
 }
 
 type cardGenerator struct {
-	settings      *Settings
+	settings      *models.WordGuessSettings
 	cardCount     map[CardColour]int
 	blackCards    int
 	whiteCards    int

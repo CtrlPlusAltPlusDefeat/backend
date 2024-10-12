@@ -44,5 +44,5 @@ type Settings struct {
 	GameId     Id              `json:"gameId"`
 	MaxPlayers int             `json:"maxPlayers"`
 	Teams      int             `json:"teams"`
-	Game       json.RawMessage `json:"game"`
+	Game       json.RawMessage `json:"game" tstype:"WordGuessSettings"`
 }
