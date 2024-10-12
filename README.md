@@ -1,8 +1,9 @@
 # Running Locally
 
 1. Install docker
-2. Install air using the command `make install-air`
-3. Then run `make watch` to run with hot reloading
+2. Make sure to setup an aws profile locally when running dynamo db
+3. Install air using the command `make install-air`
+4. Then run `make watch` to run with hot reloading
 
 # Player Service
 
